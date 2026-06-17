@@ -1,0 +1,517 @@
+---
+title: "Start Here — How to Solve a Problem"
+category: "Programming"
+summary: "Stuck and can't solve even one problem? This is the gentle, from-zero guide to how problem solving actually works — solve by hand first, then code. A ~22 minute read."
+order: 1
+updated: "2026-06-17"
+---
+
+If you've been staring at problems feeling like everyone else gets it except you — read this
+first, slowly. There's no code to memorise here. By the end you'll have solved several problems
+yourself, and you'll know the exact method to solve the next one. Take your time; this is a long
+read on purpose.
+
+## You're not bad at this
+
+Let's clear this up right away: **not being able to solve problems yet is not a sign you're bad
+at programming.** It's the most normal stage there is. It's so universal it has a nickname — the
+wall between *"I understand the syntax"* and *"I can solve a problem."*
+
+Those are **two completely different skills**:
+
+- Knowing [Python](/notes/python) is like knowing the words and grammar of a language.
+- Solving problems is like actually *holding a conversation* in it.
+
+You can know every word in a dictionary and still freeze when someone asks you a question. That's
+not stupidity — it's just a skill you haven't practised *yet*. You learned the words. Now we
+practise the talking.
+
+So if you can't solve a single problem today: good. **One** is exactly where we start. And by the
+time you finish this note, "one" will be behind you.
+
+## Solving is not coding
+
+Here's the single biggest thing nobody tells beginners:
+
+> **You are probably trying to write code to solve the problem. Stop. Code is the last 10%.**
+
+When you open the editor, read the problem, and your mind goes blank — that's not because you
+can't solve it. It's because you skipped to the hardest possible version of the task: *solving
+and translating to a programming language at the same time.* No wonder it freezes.
+
+The fix is to **split those two jobs apart**:
+
+1. First, solve the problem **as a human**, on paper, with a real example, in plain words.
+2. *Then*, and only then, translate your plain-words solution into code.
+
+The first part uses the brain you already have — you solve little problems all day without
+noticing. The second part is just typing. When you separate them, the panic disappears, because
+you're never doing both at once.
+
+Let me prove it to you.
+
+## The larger of two numbers
+
+Forget Python exists for a moment. I'm going to give you two numbers and ask which is bigger.
+
+**The numbers are 7 and 3. Which is bigger?**
+
+You said "7" instantly, without thinking. Good — now here's the important question:
+
+**How did you know?**
+
+You *compared* them. You looked at 7, looked at 3, and your brain went "7 is bigger, so the
+answer is 7." If I'd given you 2 and 9, you'd have said 9 — same move, you compared and picked
+the bigger.
+
+Now say that out loud as a general rule, in plain English:
+
+> "If the first number is bigger than the second, the answer is the first number. Otherwise, the
+> answer is the second number."
+
+**That sentence is the algorithm.** You just solved the problem — completely — and you haven't
+touched a keyboard. The hard part is *done*.
+
+Now the easy part. Translating that exact sentence to [Python](/notes/python):
+
+```python
+if a > b:
+    print(a)
+else:
+    print(b)
+```
+
+Look at it. The code says the *same thing* your sentence said. "If a is bigger than b, the answer
+is a. Otherwise, b." You didn't invent the code out of thin air — you **wrote down what your
+brain already did.**
+
+That's the whole trick. Every problem, forever, is this: solve it as a person, notice the steps,
+write the steps down.
+
+## The method (five small steps)
+
+Here's the method we just used, spelled out. Use it every single time, even when it feels too
+simple to bother:
+
+1. **Understand it.** Read the problem. Say it back in your own words. What goes in? What should
+   come out? (This is the most-skipped and most-important step. There's a whole section on it in
+   [Problem Solving](/notes/problem-solving).)
+2. **Do it by hand.** Take a *real, concrete example* — actual numbers, an actual word — and
+   solve it yourself, like a human, on paper. Not "in general." With 7 and 3.
+3. **Notice your steps.** Watch what your brain just did and write it down in plain English.
+   Those steps *are* the algorithm.
+4. **Translate.** Turn each plain-English step into a line of code.
+5. **Test.** Run it on your example. Then try a weird one (zero, a negative, an empty list) and
+   see if it still works.
+
+If you ever feel stuck, it's almost always because you're standing on step 4 or 5 when you
+haven't really finished step 2 or 3. **Go back to the example. Solve it by hand first.**
+
+## First, really read the problem
+
+Step 1 sounds too obvious to bother with, so everyone rushes it — and it's where most wrong
+answers are actually born. Before anything else, pull the problem apart into three plain
+questions:
+
+- **What do I get?** (the input — a number? a list? two strings?)
+- **What should I produce?** (the output — a number? a yes/no? a printed line?)
+- **What are the tricky cases?** (empty input, zero, negatives, duplicates, the very first and
+  very last item)
+
+Take *"find the largest number in a list."* Input: a list of numbers. Output: one number. Tricky
+cases: a list with a single number (the answer is that number), an empty list (no answer — you'd
+have to decide what to do), all-equal numbers. Spend thirty seconds here and the solution often
+falls out on its own. Skip it and you'll solve the *wrong* problem perfectly.
+
+Here's a reliable test that you actually understand a problem: **can you do one example by hand,
+with no computer?** If you can't, you don't understand it *yet* — and *that's* the thing to fix,
+not the code. Understanding always comes before solving. There's a deeper version of this idea in
+[Problem Solving](/notes/problem-solving), but this is the whole heart of it.
+
+Let's keep going — the method only becomes real through repetition, so here are several more,
+each tiny on purpose.
+
+## Is a number even or odd?
+
+**Step 1 — understand.** Given a whole number, say whether it's even or odd. In goes a number;
+out comes the word "Even" or "Odd."
+
+**Step 2 — by hand.** Is **6** even? Yes. Is **7**? No. How do *you* know 6 is even? You can split
+it into two equal halves with nothing left over. 7 leaves one left over. "Left over" is the clue.
+
+**Step 3 — your steps.** "Divide the number by 2. If there's nothing left over, it's even.
+Otherwise it's odd." The "left over" after dividing is called the **remainder**, and in Python the
+`%` operator gives it.
+
+**Step 4 — translate.**
+
+```python
+n = int(input("Enter a number: "))
+
+if n % 2 == 0:        # remainder of 0 means it divided evenly
+    print("Even")
+else:
+    print("Odd")
+```
+
+**Step 5 — test.** `6` → Even. `7` → Odd. `0` → Even (correct — zero is even). It works.
+
+Notice you didn't need to "know" anything clever. You knew what *even* means as a person; the only
+new thing was that `%` gives the remainder. The *solving* was all you.
+
+## The largest of three numbers
+
+A small step up — three numbers instead of two. The method doesn't change.
+
+**Step 2 — by hand.** Which is biggest of **4, 15, 9**? 15. How did you decide? You probably
+checked: is 4 bigger than both others? No. Is 15 bigger than both others? Yes — done.
+
+**Step 3 — your steps.** "If the first is bigger than the other two, it's the answer. Otherwise,
+check the second the same way. Otherwise, it's the third."
+
+**Step 4 — translate.**
+
+```python
+if a >= b and a >= c:
+    print(a)
+elif b >= c:
+    print(b)
+else:
+    print(c)
+```
+
+`and` means *both* conditions must be true — exactly like your sentence ("bigger than the other
+*two*"). And here's a lovely thing: Python can do this whole job for you with a built-in —
+`print(max(a, b, c))`. But it mattered that you understood it first; the built-in is a shortcut,
+not a substitute for the thinking.
+
+## Adding up a list of numbers
+
+Now something that needs a **loop** — but the method is *still the same*, so don't tense up.
+
+**Step 1 — understand.** Given a bunch of numbers, find their total.
+
+**Step 2 — by hand.** Add up `[5, 2, 8]`. How do you do it in your head? You keep a *running
+total*: start at 0. See 5 → total is 5. See 2 → total is 7. See 8 → total is 15. Done.
+
+**Step 3 — your steps.** "Start a total at 0. Go through each number, adding it to the total. At
+the end, the total is the answer." That "go through each number" is a loop. That "keep a running
+total" is the real idea — a variable that *remembers* as you go.
+
+**Step 4 — translate.**
+
+```python
+numbers = [5, 2, 8]
+total = 0                    # start the running total at 0
+
+for n in numbers:            # go through each number
+    total = total + n        # add it to the total
+
+print(total)                 # 15
+```
+
+**Step 5 — test.** Empty list `[]` → total stays 0 (sensible). One number `[9]` → 9. Works.
+
+This "keep a variable that remembers something as you loop" is one of the most powerful ideas in
+all of programming. You just learned it by adding three numbers in your head.
+
+## Counting something
+
+Same idea — *remembering as you go* — one notch up.
+
+**Step 2 — by hand.** How many times does the letter `a` appear in `"banana"`? You scanned it and
+counted: b-**a**-n-**a**-n-**a** → 3. You kept a count and bumped it up by 1 each time you saw an
+`a`.
+
+**Step 3 — your steps.** "Start a count at 0. Look at each letter. If it's an `a`, add 1 to the
+count."
+
+**Step 4 — translate.**
+
+```python
+word = "banana"
+count = 0
+
+for letter in word:
+    if letter == "a":
+        count += 1           # count += 1 means count = count + 1
+
+print(count)                 # 3
+```
+
+You've now combined a loop, an `if`, and a remembering-variable — and it came straight out of
+something you did in your head in two seconds. (Python even has a one-liner for this,
+`word.count("a")`, and a tool called `Counter` — see [Python](/notes/python) — but again, you
+*get it* now, which is the point.)
+
+## A multiplication table
+
+**Step 2 — by hand.** Write the 6 times table. You wrote `6 1 = 6`, `6 2 = 12`, ... up to
+`6 10 = 60`. You did the *same action* ten times, just with a changing number 1, 2, 3 ... 10.
+
+**Step 3 — your steps.** "Go through the numbers 1 to 10. For each one, print the number times
+that." A repeated action over a changing number is exactly what a loop is for.
+
+**Step 4 — translate.**
+
+```python
+n = int(input("Enter a number: "))
+
+for i in range(1, 11):        # 1, 2, ... 10
+    print(n, "x", i, "=", n * i)
+```
+
+**Step 5 — test.** `6` prints 6, 12, 18 ... 60. Notice `range(1, 11)` stops *before* 11, so it
+gives 1 through 10 — a classic off-by-one to watch for.
+
+## The average of a list
+
+This one needs *two* remembering-variables, which is a nice little step up.
+
+**Step 2 — by hand.** Average of `[4, 8, 6]`? You added them (18) and divided by how many there
+are (3) → 6. So you tracked two things: the running total, *and* how many numbers there were.
+
+**Step 3 — your steps.** "Keep a total and a count. Go through the list adding to the total and
+bumping the count. At the end, divide total by count."
+
+**Step 4 — translate.**
+
+```python
+numbers = [4, 8, 6]
+total = 0
+count = 0
+
+for n in numbers:
+    total += n
+    count += 1
+
+print(total / count)          # 6.0
+```
+
+**Step 5 — test.** Works for `[4, 8, 6]`. Tricky case: an *empty* list would divide by zero — so
+in real code you'd check `if count > 0` first. Spotting that is the "tricky cases" habit paying off.
+
+## FizzBuzz
+
+The most famous tiny problem in the world — and a perfect `if/elif/else` workout.
+
+**Step 1 — understand.** Count from 1 to n. But: for multiples of 3 print `Fizz`, for multiples of
+5 print `Buzz`, for multiples of *both* print `FizzBuzz`, otherwise print the number.
+
+**Step 2 — by hand.** 1, 2, Fizz (3), 4, Buzz (5), Fizz (6), 7, 8, Fizz (9), Buzz (10) ... 14,
+FizzBuzz (15). How did you decide on 15? It's divisible by 3 *and* 5.
+
+**Step 3 — your steps.** "For each number: if it's divisible by both 3 and 5, say FizzBuzz; else
+if by 3, Fizz; else if by 5, Buzz; else the number." Order matters — check *both* first.
+
+**Step 4 — translate.**
+
+```python
+for i in range(1, 16):
+    if i % 3 == 0 and i % 5 == 0:
+        print("FizzBuzz")
+    elif i % 3 == 0:
+        print("Fizz")
+    elif i % 5 == 0:
+        print("Buzz")
+    else:
+        print(i)
+```
+
+**Why the order?** If you checked "divisible by 3" first, 15 would print `Fizz` and never reach
+the both-case. Putting the *most specific* condition first is a real problem-solving instinct
+you'll reuse constantly.
+
+## Is a word a palindrome?
+
+A palindrome reads the same forwards and backwards, like `madam` or `level`.
+
+**Step 2 — by hand.** Is `madam` a palindrome? Read it backwards: `madam`. Same — yes. Is
+`hello`? Backwards is `olleh`. Different — no. So you *reversed it and compared*.
+
+**Step 3 — your steps.** "Reverse the word. If the reverse equals the original, it's a palindrome."
+
+**Step 4 — translate.**
+
+```python
+word = input("Enter a word: ")
+
+if word == word[::-1]:        # [::-1] reverses a string
+    print("Palindrome")
+else:
+    print("Not a palindrome")
+```
+
+That `[::-1]` is a Python slicing trick (see [Python](/notes/python)) — but the *idea* was
+yours: reverse and compare. The syntax is just how you wrote it down.
+
+## Do two numbers add up to a target?
+
+This is a real "interview-style" problem (it's literally called **Two Sum**), and I'm including it
+so you can see the method carry you somewhere that *looks* scary.
+
+**Step 1 — understand.** Given a list of numbers and a target, are there two numbers in the list
+that add up to the target? Example: list `[2, 7, 11]`, target `9` → yes, 2 and 7.
+
+**Step 2 — by hand.** How would you do it with pen and paper? The obvious way: take the first
+number, and check it against every other number. 2 + 7? 9 — found it. If that hadn't worked, try
+7 with the rest, and so on. That works! Slow, but it works — and **a slow solution that works is a
+real solution.** Always start there.
+
+**Step 3 — your steps.** "For each number, check every later number; if the two add up to the
+target, say yes."
+
+**Step 4 — translate (the honest, slow version first):**
+
+```python
+nums = [2, 7, 11]
+target = 9
+
+for i in range(len(nums)):
+    for j in range(i + 1, len(nums)):
+        if nums[i] + nums[j] == target:
+            print("Yes:", nums[i], nums[j])
+```
+
+That's two loops inside each other — checking every pair. It's not the fastest, but **it is
+correct, and you wrote it yourself.** That's a win. Full stop.
+
+Later — when you're ready, not today — you'll learn the faster trick (remember numbers you've
+already seen in a `set` or `dict`, and just check if the *complement* `target - n` is among them).
+That's a *pattern*, and patterns are what [Problem Solving](/notes/problem-solving) is all about.
+But notice: you can't appreciate the clever version until you've felt the slow one. So the slow
+one is not a failure — it's the doorway.
+
+## Trace your code by hand (the dry run)
+
+Here's a skill that feels tedious and quietly fixes 90% of beginner bugs: **be the computer.**
+Take your code and a small example, and step through it line by line, writing down what each
+variable holds at each step. The computer doesn't "see" your intentions — it just does exactly
+what's written, in order. A dry run lets you see what it *actually* does versus what you *meant*.
+
+Let's trace the "sum a list" program with `numbers = [5, 2, 8]`:
+
+```python
+total = 0
+for n in numbers:
+    total = total + n
+print(total)
+```
+
+Walk it like the machine does, keeping a little table in your notebook:
+
+- Start: `total = 0`.
+- Loop, `n = 5`: `total = 0 + 5` → `total = 5`.
+- Loop, `n = 2`: `total = 5 + 2` → `total = 7`.
+- Loop, `n = 8`: `total = 7 + 8` → `total = 15`.
+- Loop ends. `print(total)` → **15**.
+
+When your code gives the wrong answer, do this and watch for the exact step where a variable
+holds something you didn't expect — that line is your bug. Common things a dry run catches:
+
+- An **off-by-one** — a loop that runs one time too many or stops one too early.
+- A variable you forgot to **reset** (e.g. a `total` that wasn't set back to 0).
+- Updating things in the **wrong order** (like the swap that loses a value without a temp).
+
+You can also let Python help: drop a `print()` inside the loop to *see* the values live —
+`print("n =", n, "total =", total)`. That's not cheating; that's exactly how professionals debug.
+There's more on this under debugging in [Problem Solving](/notes/problem-solving).
+
+## When you're still stuck
+
+Okay — but what about the moment you read a problem and *genuinely* have no idea? It happens to
+everyone, including people who do this for a living. Here's the exact checklist to unstick
+yourself, in order:
+
+- **Shrink the problem.** Can't sort a list? Sort a list of *two* numbers first. Can't reverse a
+  word? Reverse `"ab"`. Solve the baby version, then grow it.
+- **Use the smallest concrete example.** Stop thinking "in general." Pick `[3, 1]`. Actual
+  numbers unstick a frozen brain almost every time.
+- **Say it out loud.** Explain the problem to a friend, a pet, or a rubber duck (this is a real,
+  named technique — *rubber-duck debugging*). The sentence "okay so I need to..." often finishes
+  itself.
+- **Write the English steps before any code.** If you can't write the steps in words, you're not
+  stuck on Python — you're stuck on the *idea*, and no amount of syntax will help. Stay on the
+  words until they exist.
+- **Set a timer (20 minutes).** If you're still stuck after that, look at a **hint** — not the
+  full solution. Just enough to take one more step. Then keep going yourself.
+- **If you do read the full solution, don't just nod.** Close it, wait an hour, and re-solve it
+  from a blank page. A problem you looked up isn't "done" until you can do it cold.
+- **Walk away.** Seriously. Solutions arrive in the shower, on a walk, after sleep. Your brain
+  keeps working when you stop forcing it. This isn't slacking — it's part of the method.
+
+## Why you feel stuck — and the fix for each
+
+Most "I can't do this" feelings trace back to one of these. See which is yours:
+
+- **You jumped straight to code.** → Go back. Solve it by hand on paper first, in words.
+- **You tried to solve it "in general."** → Use one tiny concrete example. Generality comes
+  *after* you've done a specific case.
+- **The problem is too big.** → Cut it into a smaller problem and solve that. Big problems are
+  just small problems stacked up.
+- **You think you need to know a trick.** → You almost never do. The slow, obvious solution is
+  allowed. Write that. Speed comes later.
+- **You're comparing yourself to others.** → Everyone you admire wrote terrible slow solutions for
+  months. You're seeing their highlight reel, not their first year.
+- **Tutorial hell** — you watch and follow along but can't do it alone. → The cure is *struggling
+  on your own*, even badly. Close the tutorial and try a tiny problem from scratch. Struggle is
+  the workout; watching is just stretching.
+
+## How to practice so it sticks
+
+You don't get unstuck by reading (not even this). You get unstuck by *doing small reps, often.*
+
+- **Tiny and daily beats huge and rare.** One small problem a day for a month will change you more
+  than a 10-hour weekend binge.
+- **Always solve by hand first.** Make it a ritual: example → words → code. Every time.
+- **Re-solve old problems from scratch.** This feels pointless and is secretly the most valuable
+  thing you can do — it's how the method moves from "I read it" to "I can do it."
+- **Learn one pattern at a time.** Once the baby problems feel easy, pick *one* idea from
+  [Problem Solving](/notes/problem-solving) (say, the running-total/loop idea, or the
+  "remember-what-you've-seen" hashing idea), and do a handful of problems that use just that.
+- **Use Python's helpers once you understand the manual way.** `max`, `sum`, `sorted`, `in`,
+  `Counter` — see [Python](/notes/python). Shortcuts are great *after* you know what they replace.
+
+## Your first two weeks (a tiny plan)
+
+Don't design a grand schedule. Just this:
+
+- **Days 1–3:** Re-do the problems in *this* note from a blank page — larger of two, even/odd,
+  largest of three, sum a list, count letters. By hand first, every time. That's it. That's the
+  whole task.
+- **Days 4–7:** One new tiny problem a day: multiplication table, factorial, reverse a number,
+  count vowels, average of a list. Same ritual.
+- **Week 2:** Re-solve a few from week 1 *without looking*, then read the first three sections of
+  [Problem Solving](/notes/problem-solving) — they'll finally make sense, because now you have
+  something to attach them to.
+
+If a day feels hard, make the problem *smaller*, not the effort bigger. Shrinking is a skill, not
+a surrender.
+
+## What "getting good" actually feels like
+
+Here's what nobody warns you about: it doesn't feel like a lightning bolt. There's no day you wake
+up "good." What happens is quieter — one day you read a small problem and, before you've decided
+to, your brain has already pictured the running total, or the loop, or the comparison. The
+*by-hand* step starts happening automatically. That's it. That's the whole thing you're building,
+and it's built rep by boring rep.
+
+You'll still get stuck — everyone does, forever, on harder and harder problems. But "stuck" stops
+feeling like "I'm bad at this" and starts feeling like "okay, let me shrink it and try an
+example." That shift is the entire game.
+
+## You've got this
+
+Let's be honest about where you actually are. At the start of this note you felt you couldn't
+solve a single problem. Between here and there you solved: the larger of two numbers, even-or-odd,
+the largest of three, summing a list, counting letters, a multiplication table, the average of a
+list, FizzBuzz, a palindrome check, and a real interview problem (Two Sum). That's **ten**. You
+did those — I just held the door.
+
+So the truthful version of "I can't solve even one problem" is: **"I hadn't been shown the method
+yet."** Now you have it. Understand it, solve it by hand, notice your steps, translate, test. Tiny
+and daily. Shrink when stuck.
+
+Go re-solve the larger-of-two problem right now, from a blank page, out loud. Then come back
+tomorrow and do it again. That's not falling behind — that's exactly how everyone who can do this
+learned to. Including you, starting now.

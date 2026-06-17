@@ -1,0 +1,791 @@
+---
+title: "C Programming"
+category: "Programming"
+summary: "The full C lab notebook in one place — every classic program (Part A, B and C) with code, how it works, and sample output, plus a quick reference for I/O and operators."
+order: 5
+updated: "2026-06-17"
+---
+
+Every C lab program in one place. Each one follows the same rhythm — read the input, apply the
+logic, print the result, show a sample run — so once you've got the pattern, they're all easy.
+Use the **On this page** list to jump straight to any program.
+
+## Basics quick reference
+
+**Input / output:**
+
+- `printf("...", values)` prints; `scanf("...", &var)` reads (note the `&`).
+- Format specifiers: `%d` int, `%f` float, `%.2f` float to 2 decimals, `%c` char, `%s` string,
+  `%ld` long.
+- Escape sequences: `\n` new line, `\t` tab.
+
+**Operators:**
+
+- Arithmetic `+ - * / %` — `/` on two ints drops the fraction; `%` is the remainder.
+- Relational `==  !=  >  <  >=  <=` give 1 (true) or 0 (false).
+- Logical `&&` (and), `||` (or), `!` (not).
+- Bitwise `& | ^ ~`, shift `<<` `>>`; ternary `condition ? a : b`.
+
+## The program template
+
+```c
+#include <stdio.h>      /* printf, scanf            */
+#include <conio.h>      /* clrscr(), getch()        */
+
+void main()
+{
+    /* declare variables */
+    clrscr();           /* clear screen             */
+    /* printf the prompt, scanf the input */
+    /* do the calculation */
+    /* printf the result  */
+    getch();            /* pause so output stays    */
+}
+```
+
+> Classic Turbo C style is used throughout (`void main`, `clrscr`, `getch` from `<conio.h>`).
+> Modern standard C uses `int main(void)` with `return 0;` and drops `<conio.h>` — everything
+> else is identical.
+
+---
+
+## 1. Swap two variables
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int a, b, temp;
+    clrscr();
+
+    printf("Enter two values: ");
+    scanf("%d %d", &a, &b);
+
+    temp = a;
+    a = b;
+    b = temp;
+
+    printf("\nAfter swapping: a = %d, b = %d", a, b);
+    getch();
+}
+```
+
+**How it works:** `temp` holds `a`'s value safely while `b` is copied into `a`, then the saved
+value goes into `b`. (You can also swap with arithmetic: `a=a+b; b=a-b; a=a-b;`.)
+
+```text
+Enter two values: 6 7
+After swapping: a = 7, b = 6
+```
+
+## 2. Odd or even
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int n;
+    clrscr();
+
+    printf("Enter a number: ");
+    scanf("%d", &n);
+
+    if (n % 2 == 0)
+        printf("\n%d is Even", n);
+    else
+        printf("\n%d is Odd", n);
+    getch();
+}
+```
+
+**How it works:** if the remainder `n % 2` is 0, the number is even.
+
+```text
+Enter a number: 7
+7 is Odd
+```
+
+## 3. Largest of three numbers
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int a, b, c;
+    clrscr();
+
+    printf("Enter three numbers: ");
+    scanf("%d %d %d", &a, &b, &c);
+
+    if (a >= b && a >= c)
+        printf("\n%d is the largest", a);
+    else if (b >= c)
+        printf("\n%d is the largest", b);
+    else
+        printf("\n%d is the largest", c);
+    getch();
+}
+```
+
+**How it works:** `a` wins only if it beats both others; otherwise the larger of `b` and `c`.
+
+```text
+Enter three numbers: 4 15 9
+15 is the largest
+```
+
+## 4. Area of a circle
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    float r, area;
+    float pi = 3.14;
+    clrscr();
+
+    printf("Enter the radius: ");
+    scanf("%f", &r);
+
+    area = pi * r * r;
+
+    printf("\nArea of circle = %.2f", area);
+    getch();
+}
+```
+
+**How it works:** area is `pi x r x r` with `pi = 3.14`.
+
+```text
+Enter the radius: 5
+Area of circle = 78.50
+```
+
+## 5. Simple calculator (switch case)
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    float a, b, result;
+    char op;
+    clrscr();
+
+    printf("Enter an expression (e.g. 5 + 3): ");
+    scanf("%f %c %f", &a, &op, &b);
+
+    switch (op)
+    {
+        case '+': result = a + b; break;
+        case '-': result = a - b; break;
+        case '*': result = a * b; break;
+        case '/': result = a / b; break;
+        default:
+            printf("\nInvalid operator");
+            getch();
+            return;
+    }
+
+    printf("\nResult = %.2f", result);
+    getch();
+}
+```
+
+**How it works:** `switch` picks the branch matching the operator character; `break` stops it
+falling through to the next case.
+
+```text
+Enter an expression (e.g. 5 + 3): 8 * 4
+Result = 32.00
+```
+
+## 6. Factorial of a number
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int n, i;
+    long fact = 1;
+    clrscr();
+
+    printf("Enter a number: ");
+    scanf("%d", &n);
+
+    for (i = 1; i <= n; i++)
+        fact = fact * i;
+
+    printf("\nFactorial of %d = %ld", n, fact);
+    getch();
+}
+```
+
+**How it works:** multiply `fact` by every number from 1 to `n`. `long` because factorials grow fast.
+
+```text
+Enter a number: 5
+Factorial of 5 = 120
+```
+
+## 7. Sum of N natural numbers
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int n, i, sum = 0;
+    clrscr();
+
+    printf("Enter N: ");
+    scanf("%d", &n);
+
+    for (i = 1; i <= n; i++)
+        sum = sum + i;
+
+    printf("\nSum of first %d natural numbers = %d", n, sum);
+    getch();
+}
+```
+
+**How it works:** add 1, 2, 3 ... up to `n`. (Shortcut formula: `n * (n + 1) / 2`.)
+
+```text
+Enter N: 10
+Sum of first 10 natural numbers = 55
+```
+
+## 8. First N Fibonacci numbers
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int n, i, a = 0, b = 1, c;
+    clrscr();
+
+    printf("How many terms? ");
+    scanf("%d", &n);
+
+    printf("\n%d %d", a, b);
+
+    for (i = 3; i <= n; i++)
+    {
+        c = a + b;
+        printf(" %d", c);
+        a = b;
+        b = c;
+    }
+    getch();
+}
+```
+
+**How it works:** each term is the sum of the previous two; slide the window forward each step.
+
+```text
+How many terms? 7
+0 1 1 2 3 5 8
+```
+
+## 9. Prime numbers in a range
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int low, high, i, j, flag;
+    clrscr();
+
+    printf("Enter the range (low high): ");
+    scanf("%d %d", &low, &high);
+
+    printf("\nPrimes: ");
+    for (i = low; i <= high; i++)
+    {
+        if (i < 2) continue;
+        flag = 1;
+        for (j = 2; j <= i / 2; j++)
+        {
+            if (i % j == 0) { flag = 0; break; }
+        }
+        if (flag == 1)
+            printf("%d ", i);
+    }
+    getch();
+}
+```
+
+**How it works:** for each number in the range, test if anything from 2 to `i/2` divides it; if
+nothing does, it's prime.
+
+```text
+Enter the range (low high): 10 30
+Primes: 11 13 17 19 23 29
+```
+
+## 10. GCD of two numbers (recursion)
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+int gcd(int a, int b)
+{
+    if (b == 0)
+        return a;
+    return gcd(b, a % b);   /* recursive call */
+}
+
+void main()
+{
+    int a, b;
+    clrscr();
+
+    printf("Enter two numbers: ");
+    scanf("%d %d", &a, &b);
+
+    printf("\nGCD = %d", gcd(a, b));
+    getch();
+}
+```
+
+**How it works:** Euclid's rule — `gcd(a, b) = gcd(b, a % b)`, stopping when `b` becomes 0. The
+function calls itself with smaller values each time (recursion).
+
+```text
+Enter two numbers: 36 24
+GCD = 12
+```
+
+## 11. Roots of a quadratic equation
+
+```c
+#include <stdio.h>
+#include <conio.h>
+#include <math.h>
+
+void main()
+{
+    float a, b, c, d, r1, r2;
+    clrscr();
+
+    printf("Enter a, b, c: ");
+    scanf("%f %f %f", &a, &b, &c);
+
+    d = b * b - 4 * a * c;          /* discriminant */
+
+    if (d > 0)
+    {
+        r1 = (-b + sqrt(d)) / (2 * a);
+        r2 = (-b - sqrt(d)) / (2 * a);
+        printf("\nReal and distinct roots: %.2f and %.2f", r1, r2);
+    }
+    else if (d == 0)
+    {
+        r1 = -b / (2 * a);
+        printf("\nReal and equal roots: %.2f", r1);
+    }
+    else
+    {
+        printf("\nComplex roots: %.2f + %.2fi and %.2f - %.2fi",
+               -b / (2 * a), sqrt(-d) / (2 * a),
+               -b / (2 * a), sqrt(-d) / (2 * a));
+    }
+    getch();
+}
+```
+
+**How it works:** the discriminant `d = b^2 - 4ac` decides the case — positive (two real roots),
+zero (one repeated root), negative (complex roots).
+
+```text
+Enter a, b, c: 1 -5 6
+Real and distinct roots: 3.00 and 2.00
+```
+
+## 12. Reverse an integer
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int n, rev = 0, digit;
+    clrscr();
+
+    printf("Enter a number: ");
+    scanf("%d", &n);
+
+    while (n > 0)
+    {
+        digit = n % 10;
+        rev = rev * 10 + digit;
+        n = n / 10;
+    }
+
+    printf("\nReversed = %d", rev);
+    getch();
+}
+```
+
+**How it works:** peel the last digit with `% 10`, append it to `rev` (shift `rev` up with
+`* 10`), drop the digit with `/ 10`, repeat.
+
+```text
+Enter a number: 1234
+Reversed = 4321
+```
+
+## 13. Sort N numbers (bubble sort)
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int a[50], n, i, j, temp;
+    clrscr();
+
+    printf("How many numbers? ");
+    scanf("%d", &n);
+    printf("Enter %d numbers: ", n);
+    for (i = 0; i < n; i++)
+        scanf("%d", &a[i]);
+
+    for (i = 0; i < n - 1; i++)
+        for (j = 0; j < n - 1 - i; j++)
+            if (a[j] > a[j + 1])
+            {
+                temp = a[j];
+                a[j] = a[j + 1];
+                a[j + 1] = temp;
+            }
+
+    printf("\nSorted: ");
+    for (i = 0; i < n; i++)
+        printf("%d ", a[i]);
+    getch();
+}
+```
+
+**How it works:** bubble sort repeatedly compares neighbours and swaps them if out of order, so
+the largest "bubbles" to the end each pass.
+
+```text
+How many numbers? 5
+Enter 5 numbers: 5 1 4 2 3
+Sorted: 1 2 3 4 5
+```
+
+## 14. Linear search
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int a[50], n, i, key, found = 0;
+    clrscr();
+
+    printf("How many numbers? ");
+    scanf("%d", &n);
+    printf("Enter %d numbers: ", n);
+    for (i = 0; i < n; i++)
+        scanf("%d", &a[i]);
+
+    printf("Enter the number to search: ");
+    scanf("%d", &key);
+
+    for (i = 0; i < n; i++)
+    {
+        if (a[i] == key)
+        {
+            printf("\nFound at position %d", i + 1);
+            found = 1;
+            break;
+        }
+    }
+
+    if (found == 0)
+        printf("\nNot found");
+    getch();
+}
+```
+
+**How it works:** check each element one by one until the key is found.
+
+```text
+How many numbers? 5
+Enter 5 numbers: 10 20 30 40 50
+Enter the number to search: 30
+Found at position 3
+```
+
+## 15. Add two matrices
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    int a[10][10], b[10][10], c[10][10];
+    int r, col, i, j;
+    clrscr();
+
+    printf("Enter rows and columns: ");
+    scanf("%d %d", &r, &col);
+
+    printf("Enter first matrix:\n");
+    for (i = 0; i < r; i++)
+        for (j = 0; j < col; j++)
+            scanf("%d", &a[i][j]);
+
+    printf("Enter second matrix:\n");
+    for (i = 0; i < r; i++)
+        for (j = 0; j < col; j++)
+            scanf("%d", &b[i][j]);
+
+    for (i = 0; i < r; i++)
+        for (j = 0; j < col; j++)
+            c[i][j] = a[i][j] + b[i][j];
+
+    printf("\nSum:\n");
+    for (i = 0; i < r; i++)
+    {
+        for (j = 0; j < col; j++)
+            printf("%d ", c[i][j]);
+        printf("\n");
+    }
+    getch();
+}
+```
+
+**How it works:** add the two matrices cell by cell — `c[i][j] = a[i][j] + b[i][j]` — using
+nested loops over rows and columns.
+
+```text
+Enter rows and columns: 2 2
+First: 1 2 3 4   Second: 5 6 7 8
+Sum:
+6 8
+10 12
+```
+
+## 16. Pass by value vs pass by address
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void swapByValue(int x, int y)      /* gets copies        */
+{
+    int t = x; x = y; y = t;
+}
+
+void swapByAddress(int *x, int *y)  /* gets addresses     */
+{
+    int t = *x; *x = *y; *y = t;
+}
+
+void main()
+{
+    int a = 10, b = 20;
+    clrscr();
+
+    swapByValue(a, b);
+    printf("After pass by value:   a = %d, b = %d", a, b);
+
+    swapByAddress(&a, &b);
+    printf("\nAfter pass by address: a = %d, b = %d", a, b);
+    getch();
+}
+```
+
+**How it works:** *pass by value* sends copies, so the originals don't change. *Pass by address*
+sends pointers (`&a`), so the function edits the real variables through `*x`.
+
+```text
+After pass by value:   a = 10, b = 20
+After pass by address: a = 20, b = 10
+```
+
+## 17. Add two numbers using a function
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+int add(int x, int y)
+{
+    return x + y;
+}
+
+void main()
+{
+    int a, b;
+    clrscr();
+
+    printf("Enter two numbers: ");
+    scanf("%d %d", &a, &b);
+
+    printf("\nSum = %d", add(a, b));
+    getch();
+}
+```
+
+**How it works:** the work is moved into a reusable function `add` that takes two values and
+`return`s their sum.
+
+```text
+Enter two numbers: 7 8
+Sum = 15
+```
+
+## 18. String operations
+
+```c
+#include <stdio.h>
+#include <conio.h>
+#include <string.h>
+
+void main()
+{
+    char s1[50], s2[50], s3[50];
+    clrscr();
+
+    printf("Enter first string: ");
+    scanf("%s", s1);              /* no & for arrays */
+    printf("Enter second string: ");
+    scanf("%s", s2);
+
+    printf("\nLength of s1 = %d", strlen(s1));   /* i) length      */
+
+    strcpy(s3, s1);                              /* ii) copy        */
+    printf("\nCopy of s1 = %s", s3);
+
+    strcat(s1, s2);                              /* iii) concatenate*/
+    printf("\ns1 + s2 = %s", s1);
+
+    if (strcmp(s2, s3) == 0)                     /* iv) compare     */
+        printf("\ns2 and copy are equal");
+    else
+        printf("\ns2 and copy are different");
+    getch();
+}
+```
+
+**How it works:** the `<string.h>` functions do the work — `strlen` (length), `strcpy` (copy),
+`strcat` (join), `strcmp` (compare; returns 0 when equal).
+
+```text
+Enter first string: hello
+Enter second string: world
+Length of s1 = 5
+Copy of s1 = hello
+s1 + s2 = helloworld
+s2 and copy are different
+```
+
+## 19. Structure — STUDENT
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+struct Student
+{
+    int roll;
+    char name[30];
+    float marks;
+};
+
+void main()
+{
+    struct Student s[50];
+    int n, i;
+    clrscr();
+
+    printf("How many students? ");
+    scanf("%d", &n);
+
+    for (i = 0; i < n; i++)
+    {
+        printf("\nEnter roll, name, marks: ");
+        scanf("%d %s %f", &s[i].roll, s[i].name, &s[i].marks);
+    }
+
+    printf("\nStudent details:\n");
+    for (i = 0; i < n; i++)
+        printf("%d  %s  %.2f\n", s[i].roll, s[i].name, s[i].marks);
+    getch();
+}
+```
+
+**How it works:** a `struct` groups related fields (roll, name, marks) into one type. An array of
+structs holds many students; reach a field with `s[i].roll`.
+
+```text
+How many students? 2
+1 Asha 88.5
+2 Ravi 91.0
+Student details:
+1  Asha  88.50
+2  Ravi  91.00
+```
+
+## 20. Read & write a character using a file
+
+```c
+#include <stdio.h>
+#include <conio.h>
+
+void main()
+{
+    FILE *fp;
+    char ch;
+    clrscr();
+
+    fp = fopen("data.txt", "w");      /* open for writing */
+    printf("Enter text (end with Enter): ");
+    while ((ch = getchar()) != '\n')
+        fputc(ch, fp);                /* write one char   */
+    fclose(fp);
+
+    fp = fopen("data.txt", "r");      /* open for reading */
+    printf("\nFile contents: ");
+    while ((ch = fgetc(fp)) != EOF)
+        putchar(ch);                  /* read one char    */
+    fclose(fp);
+
+    getch();
+}
+```
+
+**How it works:** `fopen` opens a file (`"w"` write, `"r"` read), `fputc`/`fgetc` write/read one
+character, `EOF` marks the end of the file, and `fclose` closes it.
+
+```text
+Enter text (end with Enter): hello
+File contents: hello
+```

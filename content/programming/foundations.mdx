@@ -1,0 +1,517 @@
+---
+title: "From if/else to DSA — The Whole Path"
+category: "Programming"
+summary: "The complete beginner journey, explained gently and in full — decisions, loops, functions, recursion, every data structure, and the core algorithms. Read it over several sittings."
+order: 2
+updated: "2026-06-17"
+---
+
+This is the whole path in one place: from making a single decision with `if/else`, step by step,
+all the way up to **data structures and algorithms** (DSA). Same gentle pace as
+[Start Here](/notes/start-here) — small ideas, tiny examples, plenty of "here's what's actually
+happening."
+
+> **How to read this:** not in one sitting. It's long on purpose. Do a section or two, try the
+> examples yourself, come back tomorrow. Each idea builds on the last, so go in order the first
+> time. Everything's in [Python](/notes/python) because it reads almost like English.
+
+We'll go in four parts: **making decisions**, **repeating things**, **organising code**, then
+**data structures and algorithms** — the big finish.
+
+---
+
+## if / else — making a decision
+
+A program mostly does one of two things: *decide* or *repeat*. Decisions come first.
+
+An `if` runs some code **only when a condition is true**:
+
+```python
+age = 20
+
+if age >= 18:
+    print("You can vote")
+```
+
+If `age >= 18` is true, the indented line runs. If it's false, it's skipped. That's it.
+
+Add an `else` for the "otherwise" case:
+
+```python
+if age >= 18:
+    print("You can vote")
+else:
+    print("Too young")
+```
+
+Exactly one of the two blocks runs — never both, never neither. Things to notice:
+
+- The condition (`age >= 18`) is a **question that's either true or false**.
+- The colon `:` starts a block; the **indentation** (4 spaces) shows what's inside it.
+- This is just you saying "*if* this, do that, *otherwise* do this other thing" — something you
+  do in real life a hundred times a day.
+
+## elif — more than two paths
+
+What if there are three or more cases? Chain them with `elif` ("else if"):
+
+```python
+score = 75
+
+if score >= 90:
+    print("A")
+elif score >= 75:
+    print("B")
+elif score >= 50:
+    print("C")
+else:
+    print("Fail")
+```
+
+Python checks them **top to bottom and stops at the first true one**. That's why order matters:
+put the most specific or highest condition first. (Remember FizzBuzz in
+[Start Here](/notes/start-here)? Same rule.)
+
+## Combining conditions — and / or / not
+
+Sometimes a decision depends on more than one thing:
+
+- `and` — true only if **both** sides are true: `age >= 18 and age < 60`.
+- `or` — true if **either** side is true: `day == "Sat" or day == "Sun"`.
+- `not` — flips true and false: `not raining`.
+
+```python
+temperature = 30
+sunny = True
+
+if temperature > 25 and sunny:
+    print("Go to the beach")
+```
+
+Read it like a sentence: "if it's warm *and* sunny." That's all these are — they let one decision
+ask about several things at once.
+
+---
+
+## while — repeat until something changes
+
+The second thing programs do is repeat. A `while` loop runs **as long as a condition stays true**:
+
+```python
+count = 1
+
+while count <= 5:
+    print(count)
+    count += 1          # MUST move toward making the condition false
+```
+
+This prints 1, 2, 3, 4, 5. The crucial line is `count += 1` — without it, `count` stays 1
+forever and the loop never ends (an **infinite loop**). Whenever you write a `while`, ask: *what
+makes this eventually stop?*
+
+Use `while` when you **don't know how many times** in advance — "keep asking until the user types
+`quit`", "keep halving until it's small enough."
+
+## for — repeat over a collection
+
+When you *do* know what you're looping over (a list, a string, a range of numbers), `for` is
+cleaner:
+
+```python
+for fruit in ["apple", "banana", "cherry"]:
+    print(fruit)
+
+for i in range(5):       # 0, 1, 2, 3, 4
+    print(i)
+```
+
+- `for x in something` gives you each item, one at a time, in `x`.
+- `range(n)` produces `0` up to `n - 1` — handy for "do this n times."
+- `range(a, b)` is `a` up to `b - 1`; `range(a, b, step)` skips by `step`.
+
+A `for` loop is just "for each thing in this pile, do something." You did this counting letters in
+[Start Here](/notes/start-here).
+
+## break & continue — steering a loop
+
+Two little controls for inside loops:
+
+- `break` — **stop the loop entirely**, right now.
+- `continue` — **skip the rest of this turn** and go to the next item.
+
+```python
+for n in range(1, 100):
+    if n == 7:
+        break            # stop as soon as we hit 7
+    print(n)             # prints 1..6
+```
+
+`break` is how a search stops the moment it finds what it wanted (you'll see this in linear search
+later).
+
+## Nested loops — a loop inside a loop
+
+You can put a loop inside another. The inner one runs *completely* for each turn of the outer one:
+
+```python
+for i in range(1, 4):
+    for j in range(1, 4):
+        print(i, j)
+# 1 1 / 1 2 / 1 3 / 2 1 / 2 2 / ... / 3 3
+```
+
+Nested loops are how you work with grids, tables, and **every pair** of things (like the slow Two
+Sum in [Start Here](/notes/start-here)). They're powerful — but notice they do `n x n` work, which
+matters a lot when we reach Big-O.
+
+---
+
+## Functions — name a piece of work
+
+As programs grow, you don't want to write the same thing twice. A **function** is a named, reusable
+block of work:
+
+```python
+def greet(name):
+    print(f"Hello, {name}!")
+
+greet("Asha")        # Hello, Asha!
+greet("Ravi")        # Hello, Ravi!
+```
+
+- `def` defines it; `name` is a **parameter** (an input it expects).
+- You **call** it by writing its name with a value: `greet("Asha")`.
+
+To send a result *back*, use `return`:
+
+```python
+def add(a, b):
+    return a + b
+
+total = add(3, 4)    # total is 7
+```
+
+`return` hands a value back to whoever called the function (and ends the function). Functions let
+you **break a big problem into small named pieces** — which is exactly how you tackle hard
+problems (see [Problem Solving](/notes/problem-solving)).
+
+## Recursion — a function that calls itself
+
+This one feels like magic at first, then clicks. A **recursive** function solves a problem by
+calling itself on a *smaller* version of the same problem.
+
+Think of factorial: `5! = 5 x 4!`, and `4! = 4 x 3!`, ... down to `1! = 1`. Each step is the same
+shape, just smaller:
+
+```python
+def factorial(n):
+    if n == 1:           # base case: the smallest, simplest answer
+        return 1
+    return n * factorial(n - 1)   # the same problem, one step smaller
+```
+
+Two parts every recursion needs:
+
+- A **base case** — the simplest input you can answer directly (here, `n == 1`). This stops it.
+- A **recursive case** — solve it using the answer to a smaller version.
+
+Without a base case it never stops (like a `while` with no exit). Recursion is the natural way to
+handle things that are made of smaller copies of themselves — like trees and many algorithms.
+
+---
+
+## Lists (arrays) — an ordered pile
+
+Now: places to *keep* data. The first and most-used is the **list** — an ordered, changeable
+collection (other languages call this an array).
+
+```python
+nums = [10, 20, 30]
+print(nums[0])       # 10  (positions start at 0)
+print(nums[-1])      # 30  (negative counts from the end)
+nums.append(40)      # add to the end -> [10, 20, 30, 40]
+nums[1] = 99         # change in place
+print(len(nums))     # 4
+print(nums[0:2])     # slicing -> [10, 99]
+```
+
+A list is the right tool when **order matters** and you want to keep a sequence of things you can
+grow, shrink, and index by position. Looking something up by position is instant (O(1)); searching
+for a value means checking each one (O(n)) — hold that thought for Big-O.
+
+## Strings — text as a sequence
+
+A **string** is just a sequence of characters, and it behaves a lot like a list (you can index and
+slice it) — but it's **immutable** (you build a new one instead of changing it):
+
+```python
+s = "hello"
+print(s[0])          # 'h'
+print(s[::-1])       # 'olleh'  (reverse trick)
+print(s.upper())     # 'HELLO'
+print("ell" in s)    # True
+```
+
+Anything you can do to a list (loop over it, slice it, check membership) you can usually do to a
+string. That's not a coincidence — they're both *sequences*.
+
+## Dictionaries (hash maps) — look up by name
+
+A **dictionary** stores **key → value** pairs. Instead of finding things by position, you find
+them by a *name* (key) — and it's basically instant (O(1) average). Written with curly braces
+`{key: value}`:
+
+```python
+ages = {"Asha": 20, "Ravi": 22}
+print(ages["Asha"])      # 20
+ages["Meena"] = 19       # add a pair
+print("Ravi" in ages)    # True
+```
+
+This is one of the most important tools in all of problem solving. Any time you think *"have I
+seen this before?"* or *"how many times does each thing appear?"* or *"let me remember this so I
+don't recompute it"* — that's a dictionary. It's the engine behind the fast Two Sum and most
+"make it faster" tricks in [Problem Solving](/notes/problem-solving).
+
+## Sets — a bag of unique things
+
+A **set** holds **unique** items, in no particular order. Written `{1, 2, 3}`. Two superpowers:
+it removes duplicates automatically, and checking "is this in here?" is instant (O(1)).
+
+```python
+seen = set()
+seen.add(5)
+seen.add(5)          # ignored, already there
+print(5 in seen)     # True, and fast
+print(set([1, 1, 2, 3]))   # {1, 2, 3}
+```
+
+Swapping a list for a set when you only need "is it in here?" is the single most common speed-up
+in Python — `x in list` is slow (O(n)), `x in set` is fast (O(1)).
+
+## Stacks & queues — order of leaving
+
+These aren't new types — they're *ways of using* a list, defined by **who leaves first**:
+
+- **Stack — Last In, First Out (LIFO).** Like a stack of plates: you take the top one (the last
+  you added). Used for undo, going "back," and depth-first exploration.
+- **Queue — First In, First Out (FIFO).** Like a line at a shop: first to arrive is first served.
+  Used for fair scheduling and breadth-first exploration.
+
+```python
+stack = []
+stack.append(1); stack.append(2)
+stack.pop()          # removes 2 (the last in)  -> LIFO
+
+from collections import deque
+queue = deque()
+queue.append(1); queue.append(2)
+queue.popleft()      # removes 1 (the first in) -> FIFO
+```
+
+(Use `deque` for queues — taking from the front of a plain list is slow. See
+[Python](/notes/python).) Stacks and queues power two of the most important algorithms, DFS and
+BFS, which we'll meet soon.
+
+## Linked lists — a chain of boxes
+
+A **linked list** is a different way to store a sequence: instead of one solid block (like a list),
+it's a chain of little boxes (**nodes**), each holding a value and a pointer to the *next* box.
+
+```python
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.next = None     # points to the next node, or None at the end
+```
+
+Why bother? Inserting or removing in the middle is cheap (just re-point arrows), but you lose
+instant position-lookup (you have to walk the chain). You mostly meet linked lists in interviews
+and to *understand* how memory and pointers work — day to day, Python's built-in list is fine.
+
+## Trees — branching structure
+
+A **tree** is data that branches, like a family tree or folders inside folders. One **root** at
+the top, each node has **children**, and nodes with no children are **leaves**. Each node is just
+like the linked-list node, but with *several* nexts:
+
+```python
+class TreeNode:
+    def __init__(self, value):
+        self.value = value
+        self.left = None     # a binary tree: at most two children
+        self.right = None
+```
+
+Trees show up everywhere — file systems, the structure of a web page, decision trees. A **binary
+search tree** keeps things sorted so you can find items quickly. Because a tree is "a node with
+smaller trees hanging off it," **recursion** is the natural way to walk one.
+
+## Graphs — things connected to things
+
+A **graph** is the most general structure: **nodes** (things) joined by **edges** (connections).
+A map of cities and roads, a social network of people and friendships, web pages and links — all
+graphs. Usually stored as a dictionary mapping each node to its neighbours:
+
+```python
+graph = {
+    "A": ["B", "C"],
+    "B": ["A", "D"],
+    "C": ["A"],
+    "D": ["B"],
+}
+```
+
+Almost every "find a path / are these connected / shortest route" problem is a graph problem,
+solved by walking it with **BFS** or **DFS** (next section). Trees are just a special, simpler kind
+of graph.
+
+## Heaps — always hand me the smallest
+
+A **heap** (priority queue) is a structure that always lets you grab the **smallest** (or largest)
+item instantly, while still being cheap to add to. You don't keep it fully sorted — just enough
+that the top is always the min.
+
+```python
+import heapq
+h = []
+heapq.heappush(h, 5)
+heapq.heappush(h, 1)
+heapq.heappush(h, 3)
+print(heapq.heappop(h))   # 1  (always the smallest)
+```
+
+Heaps are the tool for "give me the **top K** things," running medians, and shortest-path
+(Dijkstra). When you find yourself repeatedly needing "the current best one," reach for a heap.
+
+---
+
+## What "algorithm" and "Big-O" mean
+
+You now have the building blocks. An **algorithm** is just a clear recipe of steps that solves a
+problem — you've already written loads (summing a list *is* an algorithm). DSA is simply: *the
+right structure (data structure) plus the right recipe (algorithm)* for a problem.
+
+The last idea you need is **Big-O** — a way to talk about *how the work grows as the input grows*,
+ignoring the small stuff:
+
+- **O(1)** — instant, no matter the size (a dict lookup).
+- **O(n)** — do something once per item (a single loop over a list).
+- **O(n²)** — do something for *every pair* (a loop inside a loop).
+- **O(log n)** — keep halving the problem (binary search) — wonderfully fast.
+- **O(n log n)** — a good sort.
+
+Why care? With a million items, an O(n) solution finishes in a blink and an O(n²) one can take
+ages. Choosing a better structure or recipe is how you go from "too slow" to "instant." The full
+treatment — with a chart and a constraints-to-complexity table — is in
+[Problem Solving](/notes/problem-solving).
+
+## Searching
+
+The most basic algorithm: find something.
+
+**Linear search** — check each item until you find it. Works on anything. O(n).
+
+```python
+def linear_search(items, target):
+    for i, x in enumerate(items):
+        if x == target:
+            return i        # found at position i
+    return -1               # not found
+```
+
+**Binary search** — *only on sorted data*, but much faster. Look at the middle: too big? throw
+away the right half. Too small? throw away the left half. Repeat. Each step halves what's left, so
+it's O(log n) — a million items in about 20 steps.
+
+```python
+def binary_search(items, target):     # items must be sorted
+    lo, hi = 0, len(items) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if items[mid] == target:
+            return mid
+        elif items[mid] < target:
+            lo = mid + 1               # answer is in the right half
+        else:
+            hi = mid - 1               # answer is in the left half
+    return -1
+```
+
+That "halve it each time" idea is one of the most powerful in all of algorithms.
+
+## Sorting
+
+Putting things in order. You'll learn a simple one to understand *how* sorting works, then use the
+built-in forever.
+
+**Bubble sort** — walk the list, swap neighbours that are out of order, repeat until sorted. Easy
+to understand, slow (O(n²)):
+
+```python
+def bubble_sort(a):
+    n = len(a)
+    for i in range(n - 1):
+        for j in range(n - 1 - i):
+            if a[j] > a[j + 1]:
+                a[j], a[j + 1] = a[j + 1], a[j]   # swap (tuple trick!)
+    return a
+```
+
+In real life you just write `sorted(my_list)` — Python's sort is O(n log n) and excellent. But
+knowing *how* a sort works (and that it costs O(n log n)) is part of thinking clearly about speed.
+Sorting is also a setup move: lots of problems get easy *after* you sort.
+
+## The big patterns (a gentle map)
+
+Most "real" algorithm problems are solved by recognising a **pattern** — a reusable shape of
+solution. You've already met the building blocks for all of them; here's the map, lightly, so the
+names aren't scary. Each links to the deep version in [Problem Solving](/notes/problem-solving):
+
+- **Two pointers** — two positions moving through a list (often from both ends). Great on sorted
+  arrays.
+- **Sliding window** — a stretchy range over a list for "longest/shortest run that..." questions.
+- **Hashing** — use a dict/set to remember what you've seen (the Two Sum trick) and turn slow
+  searches into instant ones.
+- **Recursion & backtracking** — try every option, undo, try the next — for "generate all..."
+  problems.
+- **BFS & DFS** — walk a graph or tree. BFS (a **queue**) finds the shortest path in steps; DFS (a
+  **stack** or recursion) explores deeply.
+- **Dynamic programming** — when a problem repeats the same sub-questions, solve each once and
+  remember it (a dict again!).
+- **Greedy** — keep taking the locally best choice when that happens to give the best overall.
+
+Notice they're all just **clever uses of the structures and loops you already learned.** A pattern
+isn't new magic — it's a loop plus the right data structure, used in a known way.
+
+## How it all connects
+
+Step back and look at the staircase you just climbed:
+
+1. **Decisions** (`if/else`) and **repetition** (loops) — the two things all code does.
+2. **Functions and recursion** — packaging work so big problems become small ones.
+3. **Data structures** — lists, dicts, sets, stacks, queues, trees, graphs, heaps — *places to
+   keep data*, each good at different things.
+4. **Algorithms** — searching, sorting, and the patterns — *recipes* that combine the above.
+
+Picking **the right structure + the right recipe** for a problem is the entire game of DSA. And
+the *thinking* that chooses them is the method from [Start Here](/notes/start-here) and
+[Problem Solving](/notes/problem-solving): understand it, do it by hand, notice the steps, pick
+your tools, translate, test.
+
+## Where to go next
+
+You don't master this by reading it once — nobody does. Climb it slowly:
+
+- **First**, get rock-solid on `if/else`, loops, and functions by writing tiny programs (the ones
+  in [Start Here](/notes/start-here) and [C Programming](/notes/c-programming) / [Python](/notes/python)).
+- **Then**, get comfortable with lists, dicts, and sets — *really* comfortable. Most problems lean
+  on these three.
+- **Then**, pick up one pattern at a time from [Problem Solving](/notes/problem-solving) and do a
+  handful of problems with just that pattern, until it's a reflex.
+- Stacks, queues, trees, graphs, and heaps will feel natural *after* the basics are solid — don't
+  rush to them.
+
+There's a lot here, and you are not meant to hold it all at once. Bookmark this, climb one step at
+a time, and re-read sections as they finally "click." Every single person who's good at this
+walked exactly this staircase — one gentle step at a time. So can you.

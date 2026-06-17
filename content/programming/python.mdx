@@ -1,0 +1,426 @@
+---
+title: "Python"
+category: "Programming"
+summary: "Python from scratch — every fundamental explained clearly, building up to solving real problems, with links to the Problem Solving patterns and complexity."
+order: 6
+updated: "2026-06-17"
+---
+
+Python is where I'd start learning to *program* and to *solve problems*, because the language
+gets out of the way: it reads almost like English, handles the fiddly stuff (memory, types) for
+me, and comes with batteries included (huge standard library). This note teaches it from a blank
+page and then connects each piece back to the thinking in
+[Problem Solving](/notes/problem-solving) — the *why* behind the *how*.
+
+> The golden idea: **learn the building blocks, then learn the patterns.** Python is the
+> building blocks; [Problem Solving](/notes/problem-solving) is the patterns. You need both.
+
+## Running Python
+
+- Python is **interpreted** — you run code line by line, no compile step.
+- Two ways to run it:
+  - **REPL** (interactive): type `python` in a terminal and experiment line by line. Great for
+    trying things.
+  - **Script**: save code in a file like `hello.py` and run `python hello.py`.
+- A comment starts with `#`. Everything after it on the line is ignored.
+
+```python
+# my first program
+print("Hello, world!")
+```
+
+## Variables & types
+
+A variable is just a name pointing at a value. **No type declarations** — Python figures out the
+type from the value (dynamic typing), and a name can be reassigned to any type.
+
+```python
+name = "Asha"      # str  (text)
+age = 20           # int  (whole number)
+height = 5.4       # float (decimal)
+is_student = True  # bool (True / False)
+nothing = None     # None  (the "no value" value)
+
+print(type(age))   # <class 'int'>
+```
+
+**Converting between types:**
+
+```python
+x = int("42")      # str  -> int   -> 42
+y = float("3.14")  # str  -> float -> 3.14
+s = str(99)        # int  -> str   -> "99"
+```
+
+A classic beginner trap: `input()` always gives a **string**, so wrap it in `int()` to do maths
+with it (covered next).
+
+## Input & output
+
+```python
+name = input("Enter your name: ")     # always returns a string
+age = int(input("Enter your age: "))  # convert to int for maths
+
+print("Hello", name)                  # print can take many args (space-separated)
+print(f"Next year you'll be {age + 1}")   # f-string: drop values inside {}
+```
+
+- **f-strings** are the modern way to build text: put an `f` before the quotes and write
+  expressions inside `{ }`, e.g. `f"Total = {price * qty}"`.
+- `print` adds a newline by default; control it with `print(x, end="")` and `print(a, b, sep=", ")`.
+
+## Operators
+
+Mostly like maths, with a few Python-specific ones:
+
+- **Arithmetic:** `+  -  *  /  //  %  **`
+  - `/` is **true division** — `7 / 2` is `3.5` (always a float).
+  - `//` is **floor division** — `7 // 2` is `3` (drops the fraction).
+  - `%` is the remainder; `**` is power — `2 ** 10` is `1024`.
+- **Comparison:** `==  !=  >  <  >=  <=` — give `True` or `False`.
+- **Logical:** `and`, `or`, `not` (words, not `&&` / `||`).
+- **Membership:** `in` / `not in` — `"a" in "cat"` is `True`. Hugely useful.
+- **Assignment shortcuts:** `+=  -=  *=  /=` etc.
+
+> Coming from C? Python has **no `++` or `--`** (use `x += 1`), `/` never truncates (use `//`),
+> and blocks use **indentation, not `{ }`**.
+
+## Strings
+
+Text is a `str`. Strings are **immutable** (you can't change a character in place — you build a
+new string).
+
+```python
+s = "Python"
+print(len(s))        # 6
+print(s[0])          # 'P'   (indexing, starts at 0)
+print(s[-1])         # 'n'   (negative = from the end)
+print(s[0:3])        # 'Pyt' (slicing: start..stop, stop excluded)
+print(s.upper())     # 'PYTHON'
+print("a,b,c".split(","))   # ['a', 'b', 'c']
+print("-".join(["1", "2"])) # '1-2'
+print("hi" in s)            # False
+```
+
+Handy methods: `lower()`, `upper()`, `strip()` (trim spaces), `replace(a, b)`, `find(x)`,
+`startswith(x)`, `split()`, `join()`.
+
+## Control flow (if / elif / else)
+
+Python uses **indentation** to mark blocks — no braces, no semicolons. Be consistent (4 spaces).
+
+```python
+n = int(input("Enter a number: "))
+
+if n > 0:
+    print("positive")
+elif n == 0:
+    print("zero")
+else:
+    print("negative")
+```
+
+- A colon `:` starts a block; the indented lines below belong to it.
+- **Truthiness:** `0`, `""`, `[]`, `{}`, `None` are all "falsy"; almost everything else is "truthy".
+  So `if items:` means "if the list isn't empty".
+- **Ternary** (one-line if/else): `big = a if a > b else b`.
+
+## Loops
+
+```python
+# for over a range of numbers
+for i in range(5):        # 0, 1, 2, 3, 4
+    print(i)
+
+# for over any iterable (list, string, ...)
+for ch in "cat":
+    print(ch)
+
+# while
+count = 0
+while count < 3:
+    print(count)
+    count += 1
+```
+
+- `range(start, stop, step)` — `stop` is excluded.
+- `break` exits the loop; `continue` skips to the next iteration.
+- **`enumerate`** gives index + value: `for i, x in enumerate(items):`.
+- **`zip`** walks two lists together: `for a, b in zip(list1, list2):`.
+
+## Lists
+
+The workhorse — an **ordered, mutable** sequence (Python's dynamic array). Maps onto the array in
+[Problem Solving](/notes/problem-solving).
+
+```python
+nums = [3, 1, 4, 1, 5]
+nums.append(9)        # add to end
+nums[0] = 30          # change in place (mutable)
+print(nums[1:3])      # slicing -> [1, 4]
+print(len(nums))      # 6
+nums.sort()           # sort in place
+print(sorted(nums))   # return a new sorted list
+```
+
+- Common methods: `append`, `pop`, `insert`, `remove`, `index`, `count`, `reverse`, `sort`.
+- **List comprehension** — build a list in one readable line:
+
+```python
+squares = [x * x for x in range(5)]        # [0, 1, 4, 9, 16]
+evens = [x for x in nums if x % 2 == 0]    # filter while building
+```
+
+## Tuples
+
+Like a list but **immutable** — once made, it can't change. Good for fixed groups of values and
+for returning multiple values from a function.
+
+```python
+point = (3, 4)
+x, y = point          # "unpacking" -> x=3, y=4
+```
+
+## Dictionaries
+
+**Key → value** pairs — Python's hash map (the same idea as the hash map in
+[Problem Solving](/notes/problem-solving), with average O(1) lookup). Written with curly braces
+`{key: value}`.
+
+```python
+ages = {"Asha": 20, "Ravi": 22}
+print(ages["Asha"])        # 20
+ages["Meena"] = 19         # add / update
+print("Ravi" in ages)      # True  (checks keys)
+
+for name, age in ages.items():
+    print(name, age)
+```
+
+- Methods: `keys()`, `values()`, `items()`, `get(key, default)` (safe lookup).
+- **Dict comprehension:** `{x: x*x for x in range(4)}`.
+- This is *the* tool for counting and "have I seen it?" problems.
+
+## Sets
+
+An **unordered collection of unique items** — written `{1, 2, 3}`. Great for removing duplicates
+and fast membership tests (O(1)).
+
+```python
+s = {1, 2, 2, 3}      # -> {1, 2, 3} (duplicate dropped)
+s.add(4)
+print(3 in s)         # True, fast
+a, b = {1, 2, 3}, {2, 3, 4}
+print(a & b)          # intersection -> {2, 3}
+print(a | b)          # union -> {1, 2, 3, 4}
+```
+
+> **Which to use?** Ordered + changeable → **list**. Fixed group → **tuple**. Lookup by key /
+> counting → **dict**. Unique items / fast "is it in here?" → **set**. This choice is half of
+> [problem solving](/notes/problem-solving).
+
+## Functions
+
+Reusable blocks of logic. Define with `def`, send back a value with `return`.
+
+```python
+def add(a, b):
+    return a + b
+
+def greet(name, greeting="Hello"):    # default argument
+    return f"{greeting}, {name}!"
+
+print(add(2, 3))            # 5
+print(greet("Asha"))       # Hello, Asha!
+print(greet("Ravi", "Hi")) # Hi, Ravi!
+```
+
+- **Default arguments** give a fallback value.
+- A function can return **multiple values** as a tuple: `return total, average`.
+- **`*args`** collects extra positional args into a tuple; **`**kwargs`** collects keyword args
+  into a dict.
+- **`lambda`** is a tiny one-line anonymous function: `square = lambda x: x * x` (handy as a
+  `key=` for sorting).
+
+## Useful built-ins
+
+Python gives you a lot for free — knowing these saves writing loops:
+
+```python
+nums = [5, 2, 8, 1]
+print(len(nums), sum(nums), min(nums), max(nums))   # 4 16 1 8
+print(sorted(nums))                                 # [1, 2, 5, 8]
+print(sorted(nums, reverse=True))                   # [8, 5, 2, 1]
+print(abs(-7))                                       # 7
+print(any(x > 5 for x in nums))                      # True
+print(all(x > 0 for x in nums))                      # True
+```
+
+Also `range`, `enumerate`, `zip`, `map`, `filter`, `round`, `type`.
+
+## Modules & the standard library
+
+Pull in extra tools with `import`. The standard library is huge; the ones that matter for
+problem solving:
+
+```python
+import math
+print(math.sqrt(16), math.gcd(12, 18))   # 4.0 6
+
+from collections import Counter, defaultdict, deque
+print(Counter("banana"))     # Counter({'a': 3, 'n': 2, 'b': 1}) -- instant frequency map
+q = deque([1, 2, 3])         # fast queue: append/popleft both O(1) (great for BFS)
+
+import heapq                 # a min-heap (priority queue)
+import itertools             # combinations, permutations, product
+```
+
+- **`Counter`** — frequency counting in one line (the hashing pattern).
+- **`deque`** — the right queue for **BFS** (never use `list.pop(0)`, it's O(n)).
+- **`heapq`** — the heap for **top-K / Dijkstra**.
+
+These map straight onto the structures and patterns in
+[Problem Solving](/notes/problem-solving).
+
+## Errors & exceptions
+
+When something goes wrong Python raises an **exception**. Handle it with `try` / `except` so the
+program doesn't crash.
+
+```python
+try:
+    n = int(input("Enter a number: "))
+    print(10 / n)
+except ValueError:
+    print("That wasn't a number")
+except ZeroDivisionError:
+    print("Can't divide by zero")
+finally:
+    print("done")        # always runs
+```
+
+Common ones: `ValueError`, `TypeError`, `IndexError`, `KeyError`, `ZeroDivisionError`.
+
+## Files
+
+Read and write files with `with open(...)`, which closes the file automatically.
+
+```python
+with open("data.txt", "w") as f:   # "w" write, "r" read, "a" append
+    f.write("hello\n")
+
+with open("data.txt", "r") as f:
+    text = f.read()                # whole file as a string
+    # for line in f:  ...          # or line by line
+print(text)
+```
+
+## Python for problem solving
+
+Here's where it all comes together. These are the same classic programs from the C notes, but
+notice how much **shorter and clearer** Python is — and each one uses a pattern from
+[Problem Solving](/notes/problem-solving).
+
+**Swap two variables** — Python does it in one line (tuple unpacking):
+
+```python
+a, b = b, a
+```
+
+**Odd or even / largest of three:**
+
+```python
+print("Even" if n % 2 == 0 else "Odd")
+print(max(a, b, c))          # built-in max beats writing if/else
+```
+
+**Factorial & Fibonacci:**
+
+```python
+fact = 1
+for i in range(1, n + 1):
+    fact *= i
+
+# first n Fibonacci numbers
+a, b = 0, 1
+for _ in range(n):
+    print(a, end=" ")
+    a, b = b, a + b          # swap-and-add in one line
+```
+
+**Prime check:**
+
+```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):   # only up to sqrt(n)
+        if n % i == 0:
+            return False
+    return True
+```
+
+**Reverse a number / string:**
+
+```python
+rev = int(str(n)[::-1])      # slicing trick: [::-1] reverses
+print("hello"[::-1])         # 'olleh'
+```
+
+**Linear search** is just `in`; **sorting** is just `sorted()` — Python hands you what C made you
+write by hand.
+
+**Two Sum** — the hash-map pattern from [Problem Solving](/notes/problem-solving), in real Python:
+
+```python
+def two_sum(nums, target):
+    seen = {}                       # value -> index (a dict = hash map)
+    for i, x in enumerate(nums):
+        if target - x in seen:      # have I seen the complement?
+            return [seen[target - x], i]
+        seen[x] = i
+    return []
+```
+
+This is O(n) — see the [complexity section](/notes/problem-solving) for *why* that beats the
+O(n²) nested-loop version.
+
+## Pythonic toolkit (the patterns made easy)
+
+Python has idioms that make the [Problem Solving](/notes/problem-solving) patterns almost free:
+
+- **Comprehensions** for map/filter: `[f(x) for x in xs if cond]`.
+- **Slicing** `xs[::-1]`, `xs[a:b]` for reversing / windows.
+- **`Counter`** for frequency patterns; **`set`** for dedup and seen-checks.
+- **`sorted(xs, key=...)`** for custom orderings: `sorted(words, key=len)`.
+- **`deque`** for BFS / sliding windows; **`heapq`** for top-K / shortest path.
+- **Tuple unpacking** for swaps and multiple returns.
+
+## Complexity in Python
+
+The Big-O rules from [Problem Solving](/notes/problem-solving) apply directly — and it helps to
+know what Python's structures cost:
+
+| Operation | list | dict / set |
+|-----------|------|------------|
+| index / key lookup | O(1) | O(1) avg |
+| `x in ...` | O(n) | **O(1) avg** |
+| append / add | O(1) amortized | O(1) avg |
+| insert/remove at front | O(n) | — |
+| `pop(0)` | O(n) (use `deque`!) | — |
+
+> Big one: testing `x in my_list` is O(n), but `x in my_set` is O(1). Swapping a list for a set
+> is the most common Python speed-up — exactly the "trade space for time" move from
+> [Problem Solving](/notes/problem-solving).
+
+## Quick reference
+
+- **Run:** `python file.py`; comment with `#`.
+- **Types:** `int`, `float`, `str`, `bool`, `None`; convert with `int()`, `float()`, `str()`.
+- **I/O:** `input()` (returns str), `print(f"...")`.
+- **Blocks:** indentation + `:` (no braces, no semicolons).
+- **Collections:** `list` (ordered, mutable), `tuple` (immutable), `dict` (key→value),
+  `set` (unique).
+- **Build fast:** comprehensions, `Counter`, `set`, `sorted(key=...)`, `deque`, `heapq`.
+- **Define:** `def name(args): return ...`; one-liners with `lambda`.
+- **Safety:** `try / except / finally`; files with `with open(...)`.

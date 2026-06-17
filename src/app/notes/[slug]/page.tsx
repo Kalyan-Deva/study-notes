@@ -10,6 +10,7 @@ import {
   ComplexityScale,
   Encapsulation,
   Handshake,
+  Hint,
   LayerStack,
   SolveSteps,
   TcpVsUdp,
@@ -23,6 +24,7 @@ const mdxComponents = {
   SolveSteps,
   ComplexityScale,
   TcpVsUdp,
+  Hint,
 };
 
 // Pre-render known notes, but still render any new note added at runtime

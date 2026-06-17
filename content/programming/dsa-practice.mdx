@@ -1,0 +1,1163 @@
+---
+title: "DSA Practice — Learn by Solving"
+category: "Programming"
+summary: "A hands-on path through DSA: learn a pattern, solve real LeetCode problems with built-in Hint 1 / Hint 2 / Approach drop-downs, then the next pattern. A ~40 minute read + a lot of practice."
+order: 4
+updated: "2026-06-17"
+---
+
+This is where reading turns into *doing*. Each section teaches one pattern in plain words, then
+gives you real LeetCode problems to try. Every problem has drop-downs — open **Hint 1** only if
+you're stuck, then **Hint 2**, and **Approach** to check yourself.
+
+> **How to use this page:** read the pattern, then *actually open the problem on LeetCode and try
+> it yourself first.* Sit with it. Only then peek at Hint 1 → Hint 2 → Approach. Struggling for a
+> bit is the whole workout — peeking too fast skips it. This builds on the method in
+> [Start Here](/notes/start-here) and the theory in [Problem Solving](/notes/problem-solving).
+
+## The mindset (start here every time)
+
+Before any problem, run the same tiny loop: **understand it → get a brute-force idea → ask "what
+work am I repeating?" → that question names the pattern.** The patterns below are just the common
+answers to that question. You're not memorising solutions — you're learning to *recognise* which
+tool fits. Always be ready to write the slow, correct version first; speed comes after.
+
+## Two pointers
+
+**The idea:** instead of looping with one index, use **two** — often starting at both ends and
+moving toward each other, or one chasing the other. It turns many O(n²) scans into a single O(n)
+pass. **Tell-tale signs:** a *sorted* array, "find a pair," palindrome checks, "in place."
+
+```python
+# template: converge from both ends
+left, right = 0, len(arr) - 1
+while left < right:
+    # look at arr[left] and arr[right], then move one inward
+    ...
+```
+
+**1. Valid Palindrome (LeetCode 125).** Is a string a palindrome, ignoring case and non-letters?
+
+<Hint title="Hint 1">
+
+A palindrome reads the same forwards and backwards. Put one pointer at the start, one at the end.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Move them inward, skipping anything that isn't a letter/number, and compare the two characters
+(lower-cased). Mismatch → not a palindrome.
+
+</Hint>
+
+<Hint title="Approach">
+
+Two pointers from both ends; skip non-alphanumeric; compare `s[left].lower()` with
+`s[right].lower()`; move inward. O(n) time, O(1) space.
+
+</Hint>
+
+**2. Two Sum II – Input Array Is Sorted (LeetCode 167).** Find two numbers that add to a target;
+the array is sorted.
+
+<Hint title="Hint 1">
+
+It's *sorted* — that's a huge clue. If the current pair sums too high, which pointer should move?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Sum too big → move the right pointer left (smaller). Too small → move left pointer right (bigger).
+
+</Hint>
+
+<Hint title="Approach">
+
+Two pointers at both ends. If `a[l] + a[r] == target` you're done; if too big `r -= 1`, if too
+small `l += 1`. O(n), no extra space.
+
+</Hint>
+
+**3. Container With Most Water (LeetCode 11).** Pick two lines that hold the most water.
+
+<Hint title="Hint 1">
+
+Area is `width x min(height of the two lines)`. Start as wide as possible (both ends).
+
+</Hint>
+
+<Hint title="Hint 2">
+
+The width only shrinks as you move in, so move the **shorter** line inward — it's the one limiting
+the area, and it's your only chance to find a taller one.
+
+</Hint>
+
+<Hint title="Approach">
+
+Two pointers at both ends, track max area, always move the pointer at the shorter line. O(n).
+
+</Hint>
+
+## Sliding window
+
+**The idea:** a window `[left, right]` over a list that grows and shrinks, so you reuse the last
+computation instead of recomputing each range. **Tell-tale signs:** "contiguous subarray /
+substring," "longest/shortest/maximum run that satisfies...".
+
+**Worked example:** longest run of distinct letters in `"abcabc"` — grow `right` to `abc`
+(length 3); the next `a` is already in the window, so slide `left` past the old `a`; the window
+stays length 3, so the answer is 3. You never re-scanned the whole substring — that's the saving.
+
+**1. Best Time to Buy and Sell Stock (LeetCode 121).** Max profit from one buy then one sell.
+
+<Hint title="Hint 1">
+
+You must buy before you sell. Track the cheapest price you've seen so far as you scan left to right.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+At each day, the best profit *ending today* is today's price minus the cheapest-so-far. Keep the
+maximum.
+
+</Hint>
+
+<Hint title="Approach">
+
+One pass: keep `min_price` and `best`; update `best = max(best, price - min_price)`. O(n).
+
+</Hint>
+
+**2. Longest Substring Without Repeating Characters (LeetCode 3).** Length of the longest run with
+no repeated character.
+
+<Hint title="Hint 1">
+
+Grow a window on the right. What do you do when the new character is already inside the window?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Shrink from the left until the duplicate is gone (a `set` tracks what's in the window). Track the
+longest length seen.
+
+</Hint>
+
+<Hint title="Approach">
+
+Sliding window + a set/last-seen dict; move `left` past the previous copy on a repeat. O(n).
+
+</Hint>
+
+**3. Minimum Size Subarray Sum (LeetCode 209).** Shortest subarray whose sum is at least the target.
+
+<Hint title="Hint 1">
+
+Grow the window until the sum reaches the target — then try to shrink from the left.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+While the window sum is at least target, record the length and shrink from the left to look for a
+smaller one.
+
+</Hint>
+
+<Hint title="Approach">
+
+Expand `right` adding to a running sum; while `sum >= target`, update the min length and subtract
+`arr[left++]`. O(n).
+
+</Hint>
+
+## Hashing — maps & sets
+
+**The idea:** a `dict` or `set` gives O(1) "have I seen this?" and counting. It's the number-one
+way to turn an O(n²) search into O(n) — *trade space for time.* **Tell-tale signs:** "have I seen
+it," frequencies, "find a complement," grouping.
+
+**Worked example:** counting letters in `"banana"` — walk through once, bumping `count[ch]` each
+time, giving `a:3, n:2, b:1` in O(n). The slow way would re-scan the whole word for every letter.
+
+**1. Contains Duplicate (LeetCode 217).** Does the array have any repeated value?
+
+<Hint title="Hint 1">
+
+You could sort and check neighbours — but a set checks "seen before?" instantly.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Walk the array adding to a set; if a value is already in the set, you found a duplicate.
+
+</Hint>
+
+<Hint title="Approach">
+
+`seen = set()`; for each `x`, if `x in seen` return True else add it. O(n).
+
+</Hint>
+
+**2. Two Sum (LeetCode 1).** Indices of two numbers that add to a target (array not sorted).
+
+<Hint title="Hint 1">
+
+For each number `x`, you're really looking for one specific value: `target - x`.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Keep a dict of value → index of numbers you've passed. Check for the complement *before* adding the
+current one.
+
+</Hint>
+
+<Hint title="Approach">
+
+One pass: if `target - x` is in the dict, return both indices; else store `x`. O(n) time/space.
+(This is the same problem worked fully in [Start Here](/notes/start-here).)
+
+</Hint>
+
+**3. Group Anagrams (LeetCode 49).** Group words that are anagrams of each other.
+
+<Hint title="Hint 1">
+
+Two words are anagrams if they have the same letters. How could you give anagrams the *same key*?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Sort each word's letters (or count them) — anagrams produce the same sorted string. Use that as a
+dict key.
+
+</Hint>
+
+<Hint title="Approach">
+
+`dict` from sorted-word → list of words; append each word under its sorted key; return the values.
+O(n·k log k).
+
+</Hint>
+
+## Stack
+
+**The idea:** a stack is **last-in-first-out** — perfect for "match the most recent thing" and for
+"next greater element" style scans (a *monotonic* stack). **Tell-tale signs:** brackets/parsing,
+"undo," "nearest larger/smaller."
+
+**1. Valid Parentheses (LeetCode 20).** Are the brackets balanced and correctly nested?
+
+<Hint title="Hint 1">
+
+When you see an opening bracket, you'll need to remember it. Which one must close first — the most
+recent one. That's a stack.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Push opening brackets. On a closing bracket, the top of the stack must be its matching opener — pop
+and check.
+
+</Hint>
+
+<Hint title="Approach">
+
+Push opens; for each close, pop and verify it matches; at the end the stack must be empty. O(n).
+
+</Hint>
+
+**2. Min Stack (LeetCode 155).** A stack that also returns its minimum in O(1).
+
+<Hint title="Hint 1">
+
+A normal stack can't find its min fast. What if each entry also remembered the min *at that point*?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Push pairs (value, current-min) — or keep a second stack of mins alongside.
+
+</Hint>
+
+<Hint title="Approach">
+
+Alongside the main stack, push the running minimum with each value; `getMin` reads the top of the
+min stack. All O(1).
+
+</Hint>
+
+**3. Daily Temperatures (LeetCode 739).** For each day, how many days until a warmer one?
+
+<Hint title="Hint 1">
+
+Brute force checks every later day (O(n²)). A stack can remember days still waiting for a warmer one.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Keep a stack of indices with *decreasing* temperatures. When today is warmer than the top, you've
+found that day's answer — pop it.
+
+</Hint>
+
+<Hint title="Approach">
+
+Monotonic decreasing stack of indices; pop while current temp is higher, setting their distance.
+O(n).
+
+</Hint>
+
+## Binary search
+
+**The idea:** on *sorted* data (or a sorted *answer space*), look at the middle and throw away half
+each time — O(log n). **Tell-tale signs:** "sorted," "find a value/boundary," "minimise the maximum
+such that...".
+
+```python
+lo, hi = 0, len(arr) - 1
+while lo <= hi:
+    mid = (lo + hi) // 2
+    ...                 # decide: go left (hi = mid-1) or right (lo = mid+1)
+```
+
+**1. Binary Search (LeetCode 704).** Find a target in a sorted array.
+
+<Hint title="Hint 1">
+
+Compare the target to the middle element — that tells you which half to keep.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Target bigger than mid → search the right half (`lo = mid + 1`); smaller → left half
+(`hi = mid - 1`).
+
+</Hint>
+
+<Hint title="Approach">
+
+Standard binary search with `lo <= hi` and `mid = (lo + hi)//2`. O(log n).
+
+</Hint>
+
+**2. Koko Eating Bananas (LeetCode 875).** Smallest eating speed to finish in `h` hours.
+
+<Hint title="Hint 1">
+
+The array isn't what's sorted — the *answer* (a speed from 1 to max pile) is. And feasibility is
+monotonic: if speed `s` works, every faster speed works too.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Binary search the speed. For a candidate speed, compute the hours needed and check if it's within
+`h`.
+
+</Hint>
+
+<Hint title="Approach">
+
+Binary search on speed in `[1, max(piles)]`; `feasible(s)` = sum of `ceil(pile/s)` ≤ h. This is
+"binary search on the answer" — see [Problem Solving](/notes/problem-solving). O(n log max).
+
+</Hint>
+
+## Linked lists
+
+**The idea:** a chain of nodes (value + `next`). Many tricks use **two pointers**: a fast/slow pair,
+or careful re-pointing. **Tell-tale signs:** "reverse," "cycle," "middle," "nth from end."
+
+**1. Reverse Linked List (LeetCode 206).** Reverse it.
+
+<Hint title="Hint 1">
+
+You need to flip each node's `next` to point backwards. Keep track of the node *before* the current
+one.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Walk the list with `prev` and `curr`; at each step save `curr.next`, point `curr.next = prev`, then
+move both forward.
+
+</Hint>
+
+<Hint title="Approach">
+
+Iterative three-pointer reverse (`prev`, `curr`, `nxt`); return `prev`. O(n) time, O(1) space.
+
+</Hint>
+
+**2. Linked List Cycle (LeetCode 141).** Does the list loop?
+
+<Hint title="Hint 1">
+
+A set of visited nodes works (O(n) space). Can you do it with no extra space?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Two pointers, one moving 1 step and one moving 2. If there's a loop, the fast one laps the slow one
+and they meet.
+
+</Hint>
+
+<Hint title="Approach">
+
+Floyd's fast/slow pointers; if they ever meet, there's a cycle. O(n) time, O(1) space.
+
+</Hint>
+
+**3. Merge Two Sorted Lists (LeetCode 21).** Merge two sorted lists into one.
+
+<Hint title="Hint 1">
+
+Like merging two sorted piles of cards — always take the smaller current head.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Use a dummy head node; repeatedly attach the smaller of the two current nodes and advance that list.
+
+</Hint>
+
+<Hint title="Approach">
+
+Dummy node + tail pointer; compare heads, attach smaller, advance; attach the leftover. O(n + m).
+
+</Hint>
+
+## Trees
+
+**The idea:** a tree is a node with smaller trees hanging off it — so **recursion** is the natural
+tool. Go deep with **DFS** (recursion/stack) or level-by-level with **BFS** (a queue).
+**Tell-tale signs:** "depth," "path," "level order," anything binary-tree-shaped.
+
+**1. Maximum Depth of Binary Tree (LeetCode 104).** How tall is the tree?
+
+<Hint title="Hint 1">
+
+The depth of a tree is 1 plus the depth of its taller subtree. That's a recursive definition.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+`depth(node) = 1 + max(depth(left), depth(right))`, with `depth(None) = 0`.
+
+</Hint>
+
+<Hint title="Approach">
+
+Recursive DFS returning `1 + max(left, right)`; base case empty node → 0. O(n).
+
+</Hint>
+
+**2. Invert Binary Tree (LeetCode 226).** Mirror the tree left-to-right.
+
+<Hint title="Hint 1">
+
+At every node, what simple thing do you do to its two children?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Swap the left and right child, then invert each subtree recursively.
+
+</Hint>
+
+<Hint title="Approach">
+
+Recursion: swap children, recurse on both. O(n).
+
+</Hint>
+
+**3. Binary Tree Level Order Traversal (LeetCode 102).** Return the values level by level.
+
+<Hint title="Hint 1">
+
+"Level by level" is the signature of BFS — and BFS uses a queue.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Process the queue one whole level at a time: record how many nodes are in the current level, pop
+exactly that many, and enqueue their children.
+
+</Hint>
+
+<Hint title="Approach">
+
+BFS with a `deque`; loop while it's non-empty, taking `len(queue)` nodes per level. O(n).
+
+</Hint>
+
+## Graphs
+
+**The idea:** nodes joined by edges (stored as a dict of neighbours). Walk them with **BFS**
+(shortest steps) or **DFS** (explore fully); mark visited so you don't loop. **Tell-tale signs:**
+"connected," "shortest path," "grid of cells," "dependencies."
+
+**1. Number of Islands (LeetCode 200).** Count groups of connected land in a grid.
+
+<Hint title="Hint 1">
+
+Each unvisited piece of land starts a new island. How do you "use up" the whole island so you don't
+count it twice?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+When you find land, flood-fill it (DFS/BFS to all connected land) and mark it visited, then keep
+scanning.
+
+</Hint>
+
+<Hint title="Approach">
+
+Scan the grid; on each unvisited `1`, increment the count and DFS/BFS to sink the whole island.
+O(rows·cols).
+
+</Hint>
+
+**2. Course Schedule (LeetCode 207).** Can you finish all courses given prerequisites?
+
+<Hint title="Hint 1">
+
+Courses + prerequisites form a directed graph. When is it impossible to finish everything?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+If there's a **cycle**, you can never start. So: detect a cycle (or do a topological sort).
+
+</Hint>
+
+<Hint title="Approach">
+
+Topological sort (Kahn's: repeatedly remove zero-in-degree nodes) or DFS cycle detection. O(V + E).
+See [Problem Solving](/notes/problem-solving).
+
+</Hint>
+
+## Heaps — top-K
+
+**The idea:** a heap (priority queue) always hands you the smallest/largest item in O(log n).
+**Tell-tale signs:** "top K," "Kth largest," "merge K lists," "running median."
+
+**1. Kth Largest Element in an Array (LeetCode 215).** Find the Kth largest.
+
+<Hint title="Hint 1">
+
+Sorting works (O(n log n)). But to keep just the top K, what size heap do you need?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Keep a **min-heap of size K**. Push each number; if the heap grows past K, pop the smallest. The
+top is the Kth largest.
+
+</Hint>
+
+<Hint title="Approach">
+
+Min-heap of size K → answer is `heap[0]`. O(n log k). (`heapq` in [Python](/notes/python).)
+
+</Hint>
+
+**2. Find Median from Data Stream (LeetCode 295).** Median as numbers keep arriving.
+
+<Hint title="Hint 1">
+
+The median sits between the lower half and the upper half. What if you kept those two halves
+separately?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+A **max-heap for the lower half** and a **min-heap for the upper half**, kept balanced in size. The
+median is the top(s).
+
+</Hint>
+
+<Hint title="Approach">
+
+Two heaps balanced to differ by ≤1; median is the top of the larger, or the average of both tops.
+Insert O(log n), median O(1).
+
+</Hint>
+
+## Backtracking
+
+**The idea:** build a solution step by step, and when a choice can't work, *undo it* and try the
+next — DFS over all options. **Tell-tale signs:** "all subsets / permutations / combinations,"
+puzzles. Template: **choose → explore → unchoose.**
+
+**1. Subsets (LeetCode 78).** All subsets of a set of unique numbers.
+
+<Hint title="Hint 1">
+
+For each element you have two choices: include it, or don't. That's a branching tree of decisions.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Recurse with an index; at each step, recurse *with* the current element and *without* it (remember
+to undo when you backtrack).
+
+</Hint>
+
+<Hint title="Approach">
+
+Backtracking: at index `i`, add `nums[i]`, recurse, then remove it and recurse. O(2ⁿ).
+
+</Hint>
+
+**2. Permutations (LeetCode 46).** All orderings of the numbers.
+
+<Hint title="Hint 1">
+
+Build the permutation one position at a time, picking an unused number for each spot.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Track which numbers are used; choose an unused one, recurse, then un-choose it.
+
+</Hint>
+
+<Hint title="Approach">
+
+Backtracking with a `used` set / path; when the path length equals n, record it. O(n·n!).
+
+</Hint>
+
+## Dynamic programming
+
+**The idea:** when a problem keeps solving the *same* smaller sub-questions, solve each **once** and
+remember the answer. **Tell-tale signs:** "count the ways," "min/max cost," choices with
+overlapping subproblems. Define the **state**, the **recurrence**, the **base case**.
+
+**Worked example:** ways to climb 4 stairs (1 or 2 steps at a time): `ways(1)=1`, `ways(2)=2`,
+then `ways(3)=ways(2)+ways(1)=3`, `ways(4)=ways(3)+ways(2)=5`. Each answer reuses the two before
+it instead of recomputing them — that reuse is the whole point of DP.
+
+**1. Climbing Stairs (LeetCode 70).** Ways to climb `n` stairs taking 1 or 2 steps.
+
+<Hint title="Hint 1">
+
+To reach step `n`, your last move came from step `n-1` (a 1-step) or `n-2` (a 2-step).
+
+</Hint>
+
+<Hint title="Hint 2">
+
+So `ways(n) = ways(n-1) + ways(n-2)` — it's Fibonacci. Build it up from the bottom.
+
+</Hint>
+
+<Hint title="Approach">
+
+`dp[i] = dp[i-1] + dp[i-2]`, base `dp[0]=dp[1]=1`. O(n), and O(1) with two variables.
+
+</Hint>
+
+**2. House Robber (LeetCode 198).** Max money without robbing two adjacent houses.
+
+<Hint title="Hint 1">
+
+At each house you choose: rob it (and skip the previous) or skip it. What's best up to here?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+`best(i) = max(best(i-1), best(i-2) + money[i])` — skip this house, or take it plus best two back.
+
+</Hint>
+
+<Hint title="Approach">
+
+1-D DP with that recurrence; keep two rolling values. O(n), O(1) space.
+
+</Hint>
+
+**3. Coin Change (LeetCode 322).** Fewest coins to make an amount.
+
+<Hint title="Hint 1">
+
+To make amount `a`, try each coin `c`: then you still need `a - c`, which is a smaller version of
+the same problem.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+`dp[a] = 1 + min(dp[a - c])` over all coins `c` that fit; `dp[0] = 0`.
+
+</Hint>
+
+<Hint title="Approach">
+
+Bottom-up DP over amounts `0..target`; for each, try every coin. O(amount · coins).
+
+</Hint>
+
+## Greedy
+
+**The idea:** keep taking the locally best choice when that happens to give the best overall.
+**Tell-tale signs:** "minimum number of...," interval scheduling, a clear "best next move." (Only
+correct when the problem allows it — otherwise it's DP.)
+
+**1. Maximum Subarray (LeetCode 53).** Largest sum of a contiguous subarray.
+
+<Hint title="Hint 1">
+
+Scan left to right keeping a running sum. When would carrying the running sum forward *hurt* you?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+If the running sum goes negative, drop it (start fresh from the next element) — it can only drag the
+next subarray down. Track the best seen.
+
+</Hint>
+
+<Hint title="Approach">
+
+Kadane's algorithm: `cur = max(x, cur + x)`, `best = max(best, cur)`. O(n).
+
+</Hint>
+
+**2. Jump Game (LeetCode 55).** Can you reach the last index, given max jump lengths?
+
+<Hint title="Hint 1">
+
+Track the farthest index you can currently reach as you scan.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+If you ever stand on an index beyond your farthest reach, you're stuck. Otherwise update the reach
+with `i + nums[i]`.
+
+</Hint>
+
+<Hint title="Approach">
+
+Greedy: keep `farthest`; if `i > farthest` return False; else `farthest = max(farthest, i + nums[i])`.
+O(n).
+
+</Hint>
+
+## Prefix sums
+
+**The idea:** precompute running totals once, so the sum of *any* range is then instant (O(1))
+instead of re-adding it every time. **Worked example:** for `[2, 4, 1, 3]` the prefix array is
+`[0, 2, 6, 7, 10]` (each entry is the sum so far); the sum of positions 1–2 is
+`prefix[3] - prefix[1] = 7 - 2 = 5`. **Tell-tale signs:** lots of range-sum queries, "subarray
+sums to K."
+
+**1. Range Sum Query – Immutable (LeetCode 303).** Answer many "sum from i to j" queries fast.
+
+<Hint title="Hint 1">
+
+Re-adding the range every query is O(n) each. What could you precompute once so each query is O(1)?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Build a prefix-sum array where `prefix[k]` is the sum of the first `k` elements. Then the range
+sum is a subtraction.
+
+</Hint>
+
+<Hint title="Approach">
+
+Precompute `prefix`; `sumRange(i, j) = prefix[j+1] - prefix[i]`. Build O(n), query O(1).
+
+</Hint>
+
+**2. Subarray Sum Equals K (LeetCode 560).** Count subarrays whose sum equals `k`.
+
+<Hint title="Hint 1">
+
+A subarray sum is a difference of two prefix sums. So you want two prefix sums that differ by `k`.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+As you scan, keep a running prefix sum and a dict counting how many times each prefix sum has
+appeared. For the current sum, how many earlier prefixes equal `sum - k`?
+
+</Hint>
+
+<Hint title="Approach">
+
+Running prefix sum + a dict of prefix-sum counts; add `count[sum - k]` each step. O(n) — combines
+prefix sums with hashing.
+
+</Hint>
+
+## Intervals
+
+**The idea:** problems over ranges `[start, end]`. Almost always: **sort by start**, then sweep
+through merging or comparing neighbours. **Worked example:** to merge `[[1,3],[2,6],[8,10]]`, sort
+(already sorted), then walk: `[1,3]` and `[2,6]` overlap (2 ≤ 3) → merge to `[1,6]`; `[8,10]`
+doesn't touch `[1,6]` → keep separate. Result `[[1,6],[8,10]]`. **Tell-tale signs:** "overlapping,"
+"merge," "meeting rooms."
+
+**1. Merge Intervals (LeetCode 56).** Merge all overlapping intervals.
+
+<Hint title="Hint 1">
+
+Overlaps are easiest to see when intervals are in order — what should you sort by first?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Sort by start. Walk through; if the current interval's start is ≤ the last merged interval's end,
+they overlap — extend the end. Otherwise start a new one.
+
+</Hint>
+
+<Hint title="Approach">
+
+Sort by start; iterate merging when `cur.start <= last.end` (extend `last.end`), else append.
+O(n log n).
+
+</Hint>
+
+**2. Non-overlapping Intervals (LeetCode 435).** Fewest intervals to remove so none overlap.
+
+<Hint title="Hint 1">
+
+This is a greedy scheduling problem. If two overlap, which one should you keep to leave the most
+room for the rest?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Sort by *end* time; greedily keep the interval that finishes earliest, and remove any later one
+that overlaps it.
+
+</Hint>
+
+<Hint title="Approach">
+
+Sort by end; track the last kept end; count an interval as "removed" when its start is before that
+end. O(n log n). (A greedy classic — see [Problem Solving](/notes/problem-solving).)
+
+</Hint>
+
+## Bit manipulation
+
+**The idea:** work directly on the binary bits of a number with `&` (and), `|` (or), `^` (xor),
+`~` (not), and the shifts `<<` / `>>`. The magic one is **XOR**: `x ^ x == 0` and `x ^ 0 == x`, so
+xor-ing a whole list cancels every value that appears twice. **Worked example:** for
+`[4, 1, 4]`, `4 ^ 1 ^ 4` = `(4 ^ 4) ^ 1` = `0 ^ 1` = `1` — the unpaired number falls out.
+**Tell-tale signs:** "without extra space," "the single / missing number," parity, subsets of a
+small set.
+
+**1. Single Number (LeetCode 136).** Every element appears twice except one — find it.
+
+<Hint title="Hint 1">
+
+A hash map counting occurrences works (O(n) space). But there's an O(1)-space trick hiding in how
+pairs behave.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+XOR-ing a number with itself gives 0. So XOR the whole array — every pair cancels and only the
+lonely number is left.
+
+</Hint>
+
+<Hint title="Approach">
+
+`result = 0`; XOR every element into it; return `result`. O(n) time, O(1) space.
+
+</Hint>
+
+**2. Number of 1 Bits (LeetCode 191).** Count the set bits (1s) in a number.
+
+<Hint title="Hint 1">
+
+You could check each bit with a shift and a mask (`n & 1`, then `n >>= 1`). There's also a neat
+trick that only loops once per set bit.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+`n & (n - 1)` clears the lowest set bit. Keep doing it and counting until `n` becomes 0.
+
+</Hint>
+
+<Hint title="Approach">
+
+Loop `n &= n - 1` and count iterations — runs once per set bit. O(number of set bits).
+
+</Hint>
+
+## Tries (prefix trees)
+
+**The idea:** a tree of characters where each path from the root spells a prefix — so looking up a
+word or a prefix takes time proportional to its *length*, not the number of words stored.
+**Tell-tale signs:** autocomplete, dictionary/spell-check, "does any word start with...", many
+prefix queries.
+
+**1. Implement Trie (LeetCode 208).** Support `insert`, `search`, and `startsWith`.
+
+<Hint title="Hint 1">
+
+Each node should have a link for each possible next character, plus a flag marking "a word ends
+here."
+
+</Hint>
+
+<Hint title="Hint 2">
+
+To insert, walk/create a node per character. To `search`, walk and check the end-flag; for
+`startsWith`, just check the path exists.
+
+</Hint>
+
+<Hint title="Approach">
+
+Nodes with a children map + `is_end` flag; all operations walk the characters. O(word length) each.
+
+</Hint>
+
+**2. Add and Search Word (LeetCode 211).** Like a trie, but search may contain `.` wildcards.
+
+<Hint title="Hint 1">
+
+Normal letters walk one path. What should a `.` do — it can match *any* child.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+On a `.`, recurse into *every* child node and succeed if any branch matches the rest of the word.
+
+</Hint>
+
+<Hint title="Approach">
+
+Trie + DFS search; on `.` try all children recursively. O(word length) typical, more with many
+wildcards.
+
+</Hint>
+
+## Matrix / 2-D grids
+
+**The idea:** a grid is just a list of lists; you reach a cell with `grid[row][col]` and loop with
+*nested* loops. Many grid problems are secretly **graph traversals** (BFS/DFS over neighbouring
+cells) or **2-D DP**. **Tell-tale signs:** "matrix," "grid," "rotate/spiral," "island/region."
+
+**1. Rotate Image (LeetCode 48).** Rotate an n×n matrix 90° in place.
+
+<Hint title="Hint 1">
+
+Rotating is hard to do directly in place. Is there a combination of two simpler operations that
+equals a rotation?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+**Transpose** the matrix (swap `m[i][j]` with `m[j][i]`), then **reverse each row**. That equals a
+90° clockwise rotation.
+
+</Hint>
+
+<Hint title="Approach">
+
+Transpose in place, then reverse every row. O(n²) time, O(1) extra space.
+
+</Hint>
+
+**2. Number of Islands — revisited (LeetCode 200).** (You met it under Graphs — here's the grid
+lens.)
+
+<Hint title="Hint 1">
+
+Treat each land cell as a node connected to its 4 neighbours. Counting islands = counting connected
+components.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Scan the grid; on each unvisited land cell, DFS/BFS to its connected neighbours and mark them
+visited, then continue.
+
+</Hint>
+
+<Hint title="Approach">
+
+Nested loops + flood-fill (DFS/BFS) from each unvisited `1`. O(rows·cols). Grid problems and graph
+problems are often the same thing.
+
+</Hint>
+
+## Union-Find (disjoint sets)
+
+**The idea:** track which items are in the same group, with near-O(1) "are these connected?" and
+"merge these two groups." **Tell-tale signs:** "connected components," "same group?," detecting a
+cycle in an *undirected* graph, building a minimum spanning tree.
+
+**1. Number of Connected Components (LeetCode 323).** Count the groups in an undirected graph.
+
+<Hint title="Hint 1">
+
+Start by assuming every node is its own group. Each edge then *joins* two groups.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Use union-find: for each edge, `union` its two endpoints. Each successful union reduces the group
+count by one.
+
+</Hint>
+
+<Hint title="Approach">
+
+Union-find with path compression; start count at `n`, decrement on each merge of two different
+roots. ~O(edges).
+
+</Hint>
+
+**2. Redundant Connection (LeetCode 684).** Find the edge that creates a cycle.
+
+<Hint title="Hint 1">
+
+Add edges one by one. A cycle appears the moment you connect two nodes that are *already*
+connected.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+For each edge, if `find(a) == find(b)` they're already in the same group — that edge is the
+redundant one. Otherwise `union` them.
+
+</Hint>
+
+<Hint title="Approach">
+
+Union-find; the first edge whose endpoints share a root is the answer. ~O(edges).
+
+</Hint>
+
+## 2-D dynamic programming
+
+**The idea:** when a subproblem needs *two* indices to describe it — a position in a grid, or a
+spot in each of two sequences — your DP table is 2-D. Same plan as before (state, recurrence, base
+case), just with two dimensions. **Tell-tale signs:** "paths in a grid," comparing or matching two
+strings.
+
+**1. Unique Paths (LeetCode 62).** Count paths from the top-left to bottom-right of a grid, moving
+only right or down.
+
+<Hint title="Hint 1">
+
+To reach a cell, your last move came from the cell *above* or the cell to the *left*.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+So `paths(r, c) = paths(r-1, c) + paths(r, c-1)`, with the top row and left column all equal to 1
+(only one way along an edge).
+
+</Hint>
+
+<Hint title="Approach">
+
+Fill a 2-D table with that recurrence (or one row, rolling). O(rows·cols).
+
+</Hint>
+
+**2. Longest Common Subsequence (LeetCode 1143).** Longest sequence appearing in both strings (not
+necessarily contiguous).
+
+<Hint title="Hint 1">
+
+Compare the two strings character by character. When the current characters match, what does that
+add to the answer?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+If `a[i] == b[j]`, it's `1 + LCS(i-1, j-1)`. If not, it's the better of dropping one character from
+either string: `max(LCS(i-1, j), LCS(i, j-1))`.
+
+</Hint>
+
+<Hint title="Approach">
+
+2-D table `dp[i][j]` over the two strings with that recurrence; base cases are 0. O(n·m). A classic
+worth knowing cold — see [Problem Solving](/notes/problem-solving).
+
+</Hint>
+
+## Your practice plan
+
+You don't finish this page once — you *climb* it:
+
+1. **One pattern at a time.** Read the section, then solve its problems on LeetCode for real. Don't
+   move on until the pattern feels like a reflex (the "tell-tale signs" should jump out at you).
+2. **Try before hints.** Give each problem an honest 15–25 minutes. Hint 1 only when stuck, then
+   Hint 2, then Approach. A problem you needed the Approach for isn't "done" — redo it from scratch
+   in a few days.
+3. **Order matters.** Roughly: arrays/two-pointers → sliding window → prefix sums → hashing →
+   stack → binary search → linked lists → trees → graphs → heaps → backtracking → 1-D DP → 2-D DP
+   → greedy → intervals, then the specialised ones (bit tricks, tries, union-find, matrix) as they
+   come up. Earlier patterns show up *inside* later ones.
+4. **Mix and review.** Once a few patterns are solid, do random problems so you practise
+   *recognising* the pattern cold — that's the real interview skill.
+5. **Lean on the theory.** When a pattern's *why* is fuzzy, read its deep section in
+   [Problem Solving](/notes/problem-solving); when the *code* is fuzzy, check
+   [Python](/notes/python).
+
+Twelve patterns and a few dozen problems here will carry you through the large majority of coding
+interviews. Go slow, struggle honestly, redo the ones that bite — that's exactly how everyone who's
+good at this got there.

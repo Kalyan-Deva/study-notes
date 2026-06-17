@@ -2,6 +2,24 @@
 // passed into MDX via the `components` map. Use sparingly — one good visual beats
 // a wall of text.
 
+// Collapsible hint / approach drop-down for practice problems.
+export function Hint({
+  title = "Hint",
+  children,
+}: {
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className="my-2 rounded-lg border border-card-border bg-card/40 px-4 py-2">
+      <summary className="cursor-pointer select-none font-medium text-accent marker:text-muted">
+        {title}
+      </summary>
+      <div className="mt-1 text-[0.95em]">{children}</div>
+    </details>
+  );
+}
+
 type Part = { label: string; accent?: boolean };
 
 function Chip({ label, accent }: Part) {
