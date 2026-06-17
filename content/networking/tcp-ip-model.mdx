@@ -1,0 +1,432 @@
+---
+title: "TCP/IP Model"
+category: "Networking"
+summary: "The 4-layer model the internet actually runs on — each layer, its protocols, how it maps to OSI, encapsulation, a real web request, and why it beat OSI."
+order: 3
+updated: "2026-06-17"
+---
+
+The [OSI model](/notes/osi-model) is the *teaching* model — but the internet actually runs on the
+**TCP/IP model**. It's the same idea (split networking into layers, each with one job) with fewer
+layers and a "built it, shipped it, it works" history instead of a committee. If OSI is the
+textbook, TCP/IP is the thing humming under every website you load.
+
+- **TCP/IP = the protocol suite** named after its two most important protocols, **TCP** and
+  **IP** — but it includes dozens more (UDP, ICMP, DNS, HTTP, ...).
+- It came out of **ARPANET** / DARPA in the 1970s (Vint Cerf and Bob Kahn), was free and already
+  running, and became *the* model of the internet. Defined by IETF **RFCs** (notably RFC 1122).
+- Usually drawn as **4 layers** (sometimes 5 — more on that below).
+
+## The 4 layers
+
+<TcpIpStack />
+
+Same big idea as OSI: when you **send**, data flows *down* the stack (each layer adds its header);
+when you **receive**, it flows back *up*. Each layer only talks to the one above and below it, and
+(logically) to the same layer on the other machine.
+
+## Layer 4: Application
+
+- **Job:** everything the app cares about — it rolls OSI's Application, Presentation, and Session
+  layers (5–7) into one. The protocol the app speaks lives here.
+- **Protocols:** **HTTP/HTTPS** (web), **DNS** (name lookups), **SMTP/IMAP/POP3** (email),
+  **FTP/SFTP** (files), **SSH** (remote shell), **DHCP**, **SNMP**, **NTP**.
+- **Does:** formatting, encryption (TLS sits up here in practice), and managing the "conversation"
+  — all handled by the app or its libraries, not a separate layer.
+- **Data unit:** Data (a message).
+
+## Layer 3: Transport
+
+- **Job:** get data **end-to-end between two programs**, using **port numbers** to know which
+  program. Same as OSI Layer 4.
+- **The two protocols:**
+  - **TCP** — connection-oriented, reliable, ordered (web, email, files).
+  - **UDP** — connectionless, fast, best-effort (video, voice, DNS, games).
+  - (Full comparison in [TCP vs UDP](/notes/tcp-vs-udp).)
+- **Does:** splitting data into pieces, ports, and — for TCP — reliability, ordering, and flow /
+  congestion control.
+- **Data unit:** Segment (TCP) / Datagram (UDP).
+
+## Layer 2: Internet
+
+- **Job:** move **packets between different networks** — **routing** — using logical **IP
+  addresses**. Same as OSI Layer 3. This is the layer that makes it an *inter*-net.
+- **Protocols:** **IP** (IPv4 / IPv6) is the star; plus **ICMP** (ping, errors), **IPsec**, and
+  routing protocols (**OSPF**, **BGP**).
+- **Does:** logical addressing, choosing a path across many networks, and a hop counter (TTL) so
+  lost packets don't loop forever. Routers live here.
+- **Data unit:** Packet.
+
+## Layer 1: Network Access
+
+- **Job:** actually move the bits across the **local link** — the cable, the radio, the LAN. It
+  rolls OSI's Data Link and Physical (1–2) into one.
+- **Protocols / tech:** **Ethernet**, **Wi-Fi (802.11)**, **ARP** (maps IP to MAC), **PPP**, plus
+  all the physical media (copper, fibre, radio).
+- **Does:** framing, **MAC addressing** on the local network, error detection, and turning bits
+  into signals. Switches and NICs live here.
+- **Data unit:** Frame (then bits on the wire).
+
+## IP addresses up close
+
+IP addressing is the heart of the Internet layer, so it's worth a proper look.
+
+**IPv4** — a **32-bit** address written as four numbers 0–255, e.g. `192.168.1.10`. That's about
+**4.3 billion** addresses — which the world ran out of.
+
+- **Network part vs host part.** A **subnet mask** (or a **CIDR** suffix like `/24`) splits the
+  address into a *network* part (which network) and a *host* part (which device on it).
+  `192.168.1.0/24` means the first 24 bits identify the network, leaving 256 addresses for hosts.
+- **Private ranges (RFC 1918)** — never routed on the public internet, used inside homes and
+  offices: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`. And `127.0.0.1` is **loopback** (this
+  machine talking to itself).
+- **Public vs private + NAT.** Your devices have *private* IPs; your router has one *public* IP.
+  **NAT** (Network Address Translation) lets many private devices share that single public address
+  by rewriting addresses and ports on the way out and back. NAT is a big reason IPv4 lasted as
+  long as it has.
+
+**The IPv4 header (20 bytes)** carries, among other fields: version, header length, total length,
+**TTL** (a hop limit that drops to 0 to kill looping packets), **protocol** (`6` = TCP, `17` =
+UDP, `1` = ICMP), a header checksum, and the all-important **source and destination IP addresses**.
+
+**IPv6** — a **128-bit** address (e.g. `2001:db8::1`, written in hex groups). It exists because
+IPv4 ran out: it offers a practically unlimited number of addresses, a simpler fixed header,
+built-in IPsec, and no need for NAT. Rollout has been gradual, so IPv4 and IPv6 run side by side
+("dual stack").
+
+**ICMP** is IP's helper protocol for errors and diagnostics — **ping** (is this host reachable?)
+and **traceroute** (map the route, using the TTL expiring at each hop) both ride on it.
+
+## How DNS turns a name into an IP
+
+You type `example.com`, but the Internet layer needs an *IP address*. **DNS** (Domain Name System)
+is the internet's phone book — an Application-layer service nearly everything depends on. A lookup
+roughly goes:
+
+1. Your computer asks its **resolver** (often your ISP's, or a public one like `8.8.8.8`).
+2. If it's not cached, the resolver asks a **root** server → which points to the **TLD** server
+   (`.com`) → which points to the domain's **authoritative** server.
+3. The authoritative server returns the IP; the resolver **caches** it (for the record's **TTL**)
+   and hands it back.
+4. Now your browser can open a TCP connection to that IP.
+
+<DnsResolution />
+
+DNS mostly rides on **UDP port 53** (small, fast queries), falling back to **TCP** for large
+answers or zone transfers. It's so central that a DNS outage can take down sites that are
+otherwise perfectly healthy.
+
+## 4 layers or 5?
+
+You'll see two versions, and both are "right":
+
+- **4-layer (the original RFC 1122 model):** Application · Transport · Internet · Network Access.
+- **5-layer (common in textbooks):** it splits Network Access back into **Data Link** and
+  **Physical**, so it's easier to teach. Layers: Application · Transport · Network · Data Link ·
+  Physical.
+
+Same protocols either way — the only difference is whether the bottom is one box or two. Don't let
+it confuse you.
+
+## TCP/IP vs OSI
+
+They describe the *same journey*; TCP/IP just groups OSI's layers:
+
+| OSI (7 layers) | TCP/IP (4 layers) |
+|----------------|-------------------|
+| 7 Application · 6 Presentation · 5 Session | **Application** |
+| 4 Transport | **Transport** |
+| 3 Network | **Internet** |
+| 2 Data Link · 1 Physical | **Network Access** |
+
+The key differences:
+
+- **Layers:** 7 (OSI) vs 4 (TCP/IP).
+- **Origin:** OSI was designed by a committee *before* its protocols existed; TCP/IP grew from
+  protocols that were *already running*.
+- **In practice:** OSI's Session and Presentation layers are thin and barely used as separate
+  layers — which is exactly why TCP/IP merges them into Application.
+- **Use:** OSI is the model everyone *teaches and troubleshoots with*; TCP/IP is the model the
+  internet *runs on*.
+
+## Why TCP/IP won
+
+- It was **already working** on ARPANET and was **free**, bundled into Unix — while OSI's
+  protocols arrived late, complex, and barely implemented.
+- It grew from **"rough consensus and running code"** (ship, test, fix) rather than slow
+  standards committees.
+- It's **simple and flexible** — the famous "hourglass": *anything* over IP, IP over *anything*.
+  That narrow waist (everything meets at IP) let the internet grow without re-agreeing on the ends.
+
+So we **teach** with OSI's 7 layers but **build** on TCP/IP's 4. Both are worth knowing — see the
+full 7-layer breakdown in the [OSI model](/notes/osi-model) note.
+
+## How data moves (encapsulation)
+
+Sending data, each layer wraps what's above it in its own header (Layer 1 also adds a trailer):
+
+<DataFlow />
+
+The data travels *down* the sender's stack and back *up* the receiver's. Here's the same idea
+zoomed in on the headers each layer adds:
+
+<Encapsulation />
+
+On the far side it travels back *up* and each layer peels its own header off — **decapsulation**.
+The names line up with the layers: **Data → Segment → Packet → Frame → Bits.**
+
+## A real example: loading a web page
+
+What actually happens, layer by layer, when you open a site:
+
+1. **Application:** your browser uses **DNS** to turn the name into an IP, then forms an **HTTP**
+   request (over **TLS** for HTTPS).
+2. **Transport:** **TCP** opens a connection (3-way handshake) to port 443 and chops the request
+   into segments, numbering them for reliable, ordered delivery.
+3. **Internet:** each segment becomes an **IP packet** addressed to the server; routers forward it
+   hop by hop across networks using those IPs.
+4. **Network Access:** each packet is wrapped in an **Ethernet/Wi-Fi frame** with MAC addresses
+   for the next hop, then sent as **bits** over the wire/air.
+5. The server receives the bits and reads them back *up* the stack — frame → packet → segment →
+   your request — then replies the same way.
+
+## Protocols by layer (reference)
+
+| Layer | Protocols |
+|-------|-----------|
+| Application | HTTP, HTTPS, DNS, SMTP, IMAP, POP3, FTP, SFTP, SSH, DHCP, SNMP, NTP, TLS |
+| Transport | TCP, UDP, QUIC |
+| Internet | IP (v4/v6), ICMP, IPsec, OSPF, BGP, ARP* |
+| Network Access | Ethernet, Wi-Fi (802.11), PPP, plus the physical media |
+
+\* ARP straddles the Internet / Network Access boundary — it maps an IP address to a MAC address.
+
+## Addressing across the layers
+
+Three addresses, three jobs (the same trio as in [TCP vs UDP](/notes/tcp-vs-udp)):
+
+- **MAC address** (Network Access) — fixed on the network card; only works on the local link.
+- **IP address** (Internet) — logical address used to route *across* networks.
+- **Port number** (Transport) — picks *which program* on the machine.
+
+> Analogy: **IP** = the building's street address, **MAC** = which mailbox on the local floor,
+> **Port** = which person inside the office.
+
+## Ports explained simply
+
+An IP address gets data to the right *machine* — but one machine runs many programs at once (a
+browser, an email client, a game). A **port** is a numbered "door" on that machine so the data
+reaches the right *program*. IP gets you to the building; the port is the apartment number.
+
+- A port is a **16-bit number**, so there are **65,536** of them (0–65535).
+- They come in three ranges:
+  - **Well-known (0–1023)** — fixed services: 80 HTTP, 443 HTTPS, 22 SSH, 53 DNS, 25 SMTP.
+  - **Registered (1024–49151)** — assigned to specific apps (e.g. 3306 MySQL, 3389 RDP).
+  - **Dynamic / ephemeral (49152–65535)** — temporary ports your machine grabs for *outgoing*
+    connections.
+- **TCP and UDP have separate port spaces** — TCP port 53 and UDP port 53 are different doors.
+
+**The key idea — the 4-tuple.** A connection is identified by **four** things together:
+`(source IP, source port, destination IP, destination port)`. When you open `example.com`, your
+machine picks a random source port (say `52431`) and connects to destination port `443`. Because
+every client uses a different source IP/port, **one server port (443) can serve thousands of
+clients at once** — each is a distinct 4-tuple.
+
+| Port | Service |
+|------|---------|
+| 20 / 21 | FTP (data / control) |
+| 22 | SSH / SFTP |
+| 25 / 587 | SMTP (email sending) |
+| 53 | DNS |
+| 80 | HTTP |
+| 110 / 143 | POP3 / IMAP (email reading) |
+| 443 | HTTPS |
+| 3389 | RDP (remote desktop) |
+
+## TCP 3-way handshake
+
+Before TCP sends any real data, the two sides shake hands — to confirm both can reach each other
+and to agree on starting **sequence numbers** (so they can detect loss and ordering):
+
+<HandshakeDiagram />
+
+Step by step:
+
+1. **Client → SYN** (`seq = x`): "Let's talk. My starting sequence number is `x`."
+2. **Server → SYN, ACK** (`seq = y`, `ack = x + 1`): "OK. Mine is `y`, and I got yours — I'm now
+   expecting byte `x + 1`."
+3. **Client → ACK** (`ack = y + 1`): "Got yours, expecting `y + 1`." — the connection is now
+   **established** and data can flow.
+
+That's **one round trip** before the first byte of data (TLS for HTTPS adds another 1–2; QUIC and
+TCP Fast Open cut this down). Closing is a polite **four-way** `FIN`/`ACK` in each direction, or an
+abrupt **`RST`** to abort. *Security note:* flooding a server with SYNs that never finish the
+handshake is a **SYN flood** attack — defended with **SYN cookies** (the server holds no state
+until the handshake completes).
+
+## ARP example
+
+The Internet layer thinks in IP addresses, but to actually deliver a frame on the local network
+the Network Access layer needs the destination's **MAC address**. **ARP** (Address Resolution
+Protocol) bridges the two. Here's a concrete run — Host A (`192.168.1.10`) wants to send to
+`192.168.1.20` on the same LAN:
+
+1. **A broadcasts an ARP request** to everyone (`FF:FF:FF:FF:FF:FF`): *"Who has `192.168.1.20`?
+   Tell `192.168.1.10`."*
+2. **B replies directly** (unicast): *"`192.168.1.20` is at `AA:BB:CC:DD:EE:FF`."*
+3. **A caches** that IP→MAC mapping in its **ARP table** and sends the frame to B's MAC. Next time,
+   no request is needed (until the cache entry expires).
+
+If the destination is **outside** the LAN, A doesn't ARP for the server — it ARPs for the
+**router's** MAC (the default gateway) and hands the frame there; the router takes it from hop to
+hop. You can see your own table with `arp -a`. *Security note:* a host can lie in an ARP reply
+(**ARP spoofing**) to make traffic flow through it — a classic man-in-the-middle trick on local
+networks.
+
+## DNS record types
+
+A DNS zone holds different **record types**, each answering a different question about a domain:
+
+| Record | What it maps | Example |
+|--------|--------------|---------|
+| **A** | name → IPv4 address | `example.com` → `93.184.216.34` |
+| **AAAA** | name → IPv6 address | `example.com` → `2606:2800:220:1::...` |
+| **CNAME** | name → another name (alias) | `www.example.com` → `example.com` |
+| **MX** | mail servers (with priority) | mail handled by `mail.example.com` |
+| **NS** | the domain's authoritative name servers | `ns1.example.com` |
+| **TXT** | free-form text (SPF, DKIM, domain verification) | `"v=spf1 include:..."` |
+| **PTR** | IP → name (reverse lookup) | `93.216.184.93.in-addr.arpa` → `example.com` |
+| **SOA** | zone metadata (primary NS, serial, timers) | one per zone |
+| **SRV** | a service's host *and* port | `_sip._tcp` → host:5060 |
+
+Every record also has a **TTL** telling resolvers how long to cache it. When you "point a domain at
+a server," you're usually editing an **A** (or **AAAA**) record; when you set up email, you're
+editing **MX** and **TXT** records.
+
+## Try it yourself
+
+The best way to make this real is to poke at your own machine. Open a terminal and try these (the
+comments note the platform):
+
+```bash
+# Is a host reachable? (sends ICMP echo packets)
+ping example.com
+
+# Show the route packets take, hop by hop
+traceroute example.com      # macOS / Linux
+tracert example.com         # Windows
+
+# DNS lookups — turn a name into an IP
+nslookup example.com
+dig example.com             # detailed; try a record type: dig example.com MX
+
+# Your own IP address, subnet mask, and gateway
+ip addr                     # Linux
+ifconfig                    # macOS
+ipconfig                    # Windows
+
+# Your ARP table — IP to MAC on the local network
+arp -a
+
+# Active connections and which ports are listening
+ss -tan                     # Linux
+netstat -an                 # macOS / Windows
+
+# Talk to a web server directly and watch the request/response
+curl -v https://example.com
+```
+
+Run `ping` and you're using the **Internet layer (ICMP)**; `dig` exercises **DNS**; `arp -a` shows
+**Network Access** addressing; `curl`/`netstat` show the **Transport** and **Application** layers
+at work. The whole model, live on your own machine.
+
+## Small note: attacks cross layers
+
+The "Security by layer" table below is a teaching simplification — real attacks rarely stay in one
+layer, they **chain across them**. An attacker might **ARP-spoof** (Network Access) to sit in the
+middle, then **strip TLS** (Application) to read your traffic; or **poison DNS** (Application) to
+send you to a malicious **IP** (Internet). So while it's useful to *name* the layer of an attack,
+real defence is **layered too** ("defence in depth") — no single layer's protection is enough on
+its own.
+
+## A proper history
+
+TCP/IP wasn't designed in one shot — it grew out of a research network and a hard question: how do
+you connect *different* networks that don't agree on anything?
+
+**The problem (late 1960s).** The US **ARPANET** (funded by ARPA/DARPA) was one of the first
+packet-switched networks, running a protocol called **NCP**. But it was a *single* network. As
+other kinds of networks appeared (satellite, packet radio), the new challenge was
+*internetworking* — joining networks that were built completely differently.
+
+**The big idea (1974).** Vint **Cerf** and Bob **Kahn** published *"A Protocol for Packet Network
+Intercommunication,"* describing a **Transmission Control Program** plus **gateways** (what we now
+call routers) between networks, and a universal addressing scheme. Its guiding principle was the
+**end-to-end argument**: keep the network itself simple and "dumb," and put the smarts (like
+reliability) in the end hosts. That principle is *why* the internet could scale.
+
+**The split (late 1970s).** The original single protocol was divided into two: **TCP**
+(reliability, ordering, end-to-end) and **IP** (addressing and routing, packet by packet). That
+separation is exactly what later let **UDP** sit alongside TCP on top of the same IP.
+
+**The standards (1981).** **RFC 791** (IP) and **RFC 793** (TCP) were published — still the
+foundation the internet runs on today.
+
+**Flag day (1 January 1983).** ARPANET switched off NCP and turned on TCP/IP for everyone,
+essentially overnight. This is often called the birthday of the modern internet.
+
+**Free and everywhere (1980s).** TCP/IP shipped inside **BSD Unix**, with the **Berkeley sockets**
+API — the same programming interface still used today. Being free *and* already working, it spread
+through universities like wildfire.
+
+**The protocol wars (1980s–early 90s).** Meanwhile the **OSI** model and its protocols were being
+designed by international committees (ISO) and backed by governments as the "official" future. For
+a while OSI looked set to win on paper. But its protocols were complex, late, and barely
+implemented, while TCP/IP was simple and *running everywhere*. TCP/IP won decisively — though
+OSI's 7-layer *model* survived as the teaching language (see the [OSI model](/notes/osi-model)).
+
+**Host requirements (1989).** **RFC 1122** and 1123 pinned down what a correct TCP/IP host must do,
+formalising the 4-layer model.
+
+**The commercial internet (1990s).** The **World Wide Web** (HTTP, 1991), the first browsers, and
+the lifting of commercial restrictions turned TCP/IP from a research network into global
+infrastructure.
+
+**Running out of room (1990s–2010s).** IPv4's 4.3 billion addresses weren't enough. Stopgaps like
+**NAT** and **CIDR** bought time; the long-term fix, **IPv6**, was standardised (RFC 2460 in 1998,
+updated by RFC 8200 in 2017) and is still being rolled out alongside IPv4 today.
+
+### Timeline at a glance
+
+| Year | Milestone |
+|------|-----------|
+| 1969 | ARPANET goes live (running NCP) |
+| 1974 | Cerf & Kahn publish the TCP design |
+| 1981 | RFC 791 (IP) and RFC 793 (TCP) |
+| 1983 | ARPANET "flag day" — everyone switches to TCP/IP |
+| 1984 | DNS introduced (names instead of one big hosts file) |
+| 1989 | RFC 1122 formalises host requirements / the 4-layer model |
+| 1991 | The World Wide Web (HTTP) arrives on top of TCP/IP |
+| 1998 | IPv6 standardised, to fix IPv4 exhaustion |
+| 2011 | IANA hands out the last blocks of IPv4 addresses |
+
+## Security by layer
+
+Same "name the layer, find the fix" idea as OSI:
+
+| Layer | Common attacks | Defenses |
+|-------|----------------|----------|
+| Application | Phishing, SQL injection, XSS, DNS poisoning | WAF, input validation, DNSSEC, HSTS |
+| Transport | SYN floods, port scans | SYN cookies, stateful firewall, rate limiting |
+| Internet | IP spoofing, ICMP floods | ACLs, firewalls, ingress filtering (BCP 38), IPsec |
+| Network Access | ARP spoofing, MAC flooding, Wi-Fi attacks | DHCP snooping, dynamic ARP inspection, port security |
+
+## Glossary
+
+- **TCP/IP** — the protocol suite (and 4-layer model) the internet runs on.
+- **IP** — the Internet-layer protocol that addresses and routes packets (IPv4 / IPv6).
+- **Encapsulation** — each layer wrapping the data above it in its own header on the way down.
+- **The hourglass** — *anything* over IP, IP over *anything*: the narrow waist that let the
+  internet scale.
+- **RFC** — "Request for Comments," the IETF documents that define internet protocols.
+- **PDU names:** Data → Segment → Packet → Frame → Bits (Application down to Network Access).

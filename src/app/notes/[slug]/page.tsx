@@ -8,11 +8,15 @@ import rehypePrettyCode, { type Options as PrettyCodeOptions } from "rehype-pret
 import { getAllSlugs, getNoteBySlug } from "@/lib/content";
 import {
   ComplexityScale,
+  DataFlow,
+  DnsResolution,
   Encapsulation,
   Handshake,
+  HandshakeDiagram,
   Hint,
   LayerStack,
   SolveSteps,
+  TcpIpStack,
   TcpVsUdp,
 } from "@/components/figures";
 import { OnThisPage } from "@/components/on-this-page";
@@ -24,7 +28,11 @@ const mdxComponents = {
   SolveSteps,
   ComplexityScale,
   TcpVsUdp,
+  TcpIpStack,
   Hint,
+  DnsResolution,
+  DataFlow,
+  HandshakeDiagram,
 };
 
 // Pre-render known notes, but still render any new note added at runtime
