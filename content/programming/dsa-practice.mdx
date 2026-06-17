@@ -22,6 +22,232 @@ work am I repeating?" → that question names the pattern.** The patterns below 
 answers to that question. You're not memorising solutions — you're learning to *recognise* which
 tool fits. Always be ready to write the slow, correct version first; speed comes after.
 
+## Before the patterns: the basics
+
+If loops and arrays still feel shaky, **do these three sections first.** The patterns later are
+just clever ways of using loops and lists — so these basics are the alphabet, and the patterns are
+the words. Everything here is in [Python](/notes/python), and there's a gentler full walkthrough in
+[Start Here](/notes/start-here) if you want even smaller steps. No rush — get these to feel easy
+before moving on.
+
+## Arrays (lists) — the basics
+
+**The idea:** a list holds items in order. You reach one by its **position (index)**, starting at
+`0`, and you visit them all with a `for` loop. **Worked example:** for `nums = [10, 20, 30]`,
+`nums[0]` is `10`, `nums[-1]` is `30`, `len(nums)` is `3`, and `for x in nums:` hands you `10`,
+then `20`, then `30`. **This is the container almost every problem uses.**
+
+**1. Sum all elements (don't use `sum()`).** Add up every number in a list yourself.
+
+<Hint title="Hint 1">
+
+Keep a running total that starts at 0 (remember the "running total" idea from
+[Start Here](/notes/start-here)?).
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Loop over the list, and on each item add it to the total.
+
+</Hint>
+
+<Hint title="Approach">
+
+`total = 0`; `for x in nums: total += x`; then `total` is the answer. O(n). (LeetCode 1480, Running
+Sum, is a close cousin.)
+
+</Hint>
+
+**2. Find the largest element (don't use `max()`).**
+
+<Hint title="Hint 1">
+
+Imagine reading the numbers one by one — you'd keep track of the biggest you've seen so far.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Start by assuming the first element is the biggest, then update it whenever you find something
+larger.
+
+</Hint>
+
+<Hint title="Approach">
+
+`best = nums[0]`; loop and `if x > best: best = x`. O(n).
+
+</Hint>
+
+**3. Count how many numbers are even.**
+
+<Hint title="Hint 1">
+
+"Even" means divisible by 2 — and `%` gives the remainder.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Keep a counter; for each number, if `x % 2 == 0`, add 1.
+
+</Hint>
+
+<Hint title="Approach">
+
+`count = 0`; `for x in nums: if x % 2 == 0: count += 1`. O(n).
+
+</Hint>
+
+## Loops — the basics
+
+**The idea:** a loop repeats work. A `for` loop walks a fixed set of things (a list, or
+`range(n)` for the numbers `0 .. n-1`); a `while` loop repeats *until* a condition stops being
+true. The trick that makes loops powerful is a **variable that remembers** across turns (a total,
+a count, a "best so far"). `break` stops a loop early; `continue` skips to the next turn.
+
+**1. Sum the numbers from 1 to n.**
+
+<Hint title="Hint 1">
+
+`range(1, n + 1)` gives you `1, 2, ... n` (the stop value is excluded, so use `n + 1`).
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Keep a running total and add each `i` to it inside the loop.
+
+</Hint>
+
+<Hint title="Approach">
+
+`total = 0`; `for i in range(1, n + 1): total += i`. O(n). (Shortcut formula: `n * (n + 1) // 2`.)
+
+</Hint>
+
+**2. Print the multiplication table of a number.**
+
+<Hint title="Hint 1">
+
+You want `n x 1`, `n x 2`, ... `n x 10` — the same action ten times with a changing multiplier.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Loop `i` from 1 to 10 and print `n * i` each time.
+
+</Hint>
+
+<Hint title="Approach">
+
+`for i in range(1, 11): print(n, "x", i, "=", n * i)`. O(1) (fixed 10 lines).
+
+</Hint>
+
+**3. Reverse a list (build a new one).**
+
+<Hint title="Hint 1">
+
+If you walk the original from the *last* element to the first, adding each to a new list, what do
+you get?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Loop the indices backwards with `range(len(nums) - 1, -1, -1)`, or just append and reverse — or use
+slicing `nums[::-1]`.
+
+</Hint>
+
+<Hint title="Approach">
+
+`out = []`; loop backwards appending; (or the Python one-liner `nums[::-1]`). O(n).
+
+</Hint>
+
+## Conditions, and "switch"
+
+**The idea:** `if` runs code only when a condition is true; `elif` adds more cases; `else` is the
+fallback. Combine conditions with `and`, `or`, `not`. C has a **`switch`** statement for picking
+one of many cases — Python doesn't; you use an `if/elif` chain, or `match`/`case` (Python 3.10+),
+which reads almost the same:
+
+```python
+# Python's version of switch
+match command:
+    case "start":
+        print("starting")
+    case "stop":
+        print("stopping")
+    case _:               # the default case
+        print("unknown")
+```
+
+**1. Largest of three numbers.**
+
+<Hint title="Hint 1">
+
+`a` is the largest only if it beats *both* of the others. `and` checks two things at once.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+`if a >= b and a >= c: ... elif b >= c: ... else: ...`.
+
+</Hint>
+
+<Hint title="Approach">
+
+The `if/elif/else` chain above (or simply `max(a, b, c)` once you understand it). O(1).
+
+</Hint>
+
+**2. FizzBuzz (LeetCode 412).** For 1..n print `Fizz` for multiples of 3, `Buzz` for 5, `FizzBuzz`
+for both, else the number.
+
+<Hint title="Hint 1">
+
+Use `%` to test divisibility. Which case is the most specific and must be checked first?
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Check "divisible by both 3 and 5" *first*, then by 3, then by 5, then else the number.
+
+</Hint>
+
+<Hint title="Approach">
+
+Loop 1..n with an `if/elif/elif/else`; test `i % 3 == 0 and i % 5 == 0` first. O(n).
+
+</Hint>
+
+**3. Grade from a score (a switch-style problem).** Given a score, print A / B / C / Fail.
+
+<Hint title="Hint 1">
+
+This is ranges, not exact values, so an `if/elif` chain fits better than `match` here.
+
+</Hint>
+
+<Hint title="Hint 2">
+
+Check from the highest band down: `>= 90` → A, `>= 75` → B, `>= 50` → C, else Fail. Order matters.
+
+</Hint>
+
+<Hint title="Approach">
+
+`if/elif/elif/else` from highest threshold to lowest. O(1).
+
+</Hint>
+
 ## Two pointers
 
 **The idea:** instead of looping with one index, use **two** — often starting at both ends and
