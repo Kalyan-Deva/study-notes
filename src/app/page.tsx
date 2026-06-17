@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div>
       <section className="border-b border-border pb-8">
-        <h1 className="text-4xl font-bold tracking-tight">Notes</h1>
+        <h1 className="text-4xl font-bold tracking-tight">Lexicon</h1>
         <p className="mt-3 max-w-2xl text-lg text-muted">
           A personal knowledge base. Ask a question, get a clear explanation, and
           it lands here as a topic — browse them anytime from the sidebar.

@@ -17,10 +17,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Notes",
-    template: "%s · Notes",
+    default: "Lexicon",
+    template: "%s · Lexicon",
   },
-  description: "A personal, ask-and-it-becomes-notes knowledge base.",
+  description: "Lexicon — a personal, ask-and-it-becomes-notes knowledge base.",
 };
 
 export default function RootLayout({

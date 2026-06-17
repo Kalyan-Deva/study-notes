@@ -25,9 +25,9 @@ export function AppShell({
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 lg:px-8">
           <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-accent text-[13px] font-bold text-accent-foreground">
-              N
+              L
             </span>
-            Notes
+            Lexicon
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
