@@ -12,6 +12,7 @@ import {
   Handshake,
   LayerStack,
   SolveSteps,
+  TcpVsUdp,
 } from "@/components/figures";
 import { OnThisPage } from "@/components/on-this-page";
 
@@ -21,6 +22,7 @@ const mdxComponents = {
   Handshake,
   SolveSteps,
   ComplexityScale,
+  TcpVsUdp,
 };
 
 // Pre-render known notes, but still render any new note added at runtime

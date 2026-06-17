@@ -1,0 +1,249 @@
+---
+title: "TCP vs UDP"
+category: "Networking"
+summary: "The two transport protocols compared in full — how each works, when to use which, headers, reliability, security, and where QUIC/HTTP-3 fits."
+order: 2
+updated: "2026-06-17"
+---
+
+TCP and UDP are the two main **transport-layer (Layer 4)** protocols — they're how two
+*programs* on different machines actually talk, on top of IP. They solve the same problem in
+opposite ways:
+
+- **TCP** gives you a **reliable, ordered** connection. Nothing is lost or out of order — but
+  you pay for it in setup time and overhead.
+- **UDP** just **fires packets** with no promises. It's tiny and fast — but anything lost,
+  duplicated, or reordered is your problem.
+
+The one-line rule: **TCP trades speed for guarantees; UDP trades guarantees for speed.**
+
+## At a glance
+
+<TcpVsUdp />
+
+## What is TCP
+
+**TCP — Transmission Control Protocol** (RFC 9293, originally RFC 793 in 1981). It's the
+reliable workhorse of the internet — web, email, files, SSH, databases all ride on it.
+
+- **Connection-oriented:** both sides set up a connection (a "virtual circuit") before any data
+  flows, keep state about it, and close it cleanly afterward.
+- **Reliable, ordered byte stream:** every byte is delivered exactly once, error-checked, and
+  in the order sent — or the connection is reported as failed.
+- **Self-managing:** it has built-in flow control (don't overwhelm the receiver) and congestion
+  control (don't overwhelm the network).
+- It's a **byte stream** with no message boundaries — the app has to frame its own messages.
+
+## What is UDP
+
+**UDP — User Datagram Protocol** (RFC 768, 1980 — barely changed since). It's a thin wrapper
+over IP that adds almost nothing: just ports and an optional checksum.
+
+- **Connectionless:** no setup, no teardown. Each datagram is independent and self-contained.
+- **Best-effort / unreliable:** packets can be dropped, duplicated, or reordered, with no
+  acknowledgement, no retransmission, and no warning.
+- **Message-oriented:** one send = one datagram of the same size on the other end (boundaries
+  are preserved, unlike TCP).
+- **No flow or congestion control** of its own — if you need any of that, you build it on top.
+
+## The TCP handshake
+
+Before TCP sends data, the two sides agree with a **3-way handshake**:
+
+<Handshake />
+
+That costs **1 round trip** before the first byte (and a TLS handshake on top adds 1–2 more).
+Closing is a polite 4-way `FIN`/`ACK` in each direction, or an abrupt `RST` to abort. **UDP has
+none of this** — the very first packet already carries your data (0 round trips).
+
+## Reliability & ordering
+
+This is the core difference.
+
+- **TCP:** every byte gets a **sequence number**; the receiver sends back **ACKs** for what it
+  got. Anything unacknowledged is **retransmitted** (after a timeout, or fast-retransmit on 3
+  duplicate ACKs). **SACK** lets the receiver say exactly which chunks are missing so only those
+  are resent. Out-of-order segments are buffered and handed to the app in order.
+- **UDP:** none of that. No sequence numbers, no ACKs, no retransmission. A lost datagram is
+  just gone unless your application notices and asks again.
+
+**Head-of-line blocking** — TCP's hidden cost. Because TCP is *one* ordered stream, a single
+lost packet stalls **everything** behind it until it's resent — even unrelated data. This
+especially hurts HTTP/2, where many streams share one TCP connection and one lost packet stalls
+them all. Fixing this was the whole reason QUIC was built (see below).
+
+## Flow & congestion control
+
+Two different jobs, both built into TCP and **absent from UDP**:
+
+- **Flow control** — don't overwhelm the *receiver*. TCP uses a **sliding window**: the receiver
+  advertises how much buffer it has free, and the sender never has more unacknowledged data in
+  flight than that.
+- **Congestion control** — don't overwhelm the *network*. TCP grows its send rate slowly
+  (**slow start**), then backs off on loss. The specific algorithm is pluggable: **CUBIC** is
+  the common Linux default (loss-based); **BBR** (Google) is newer and model-based, often better
+  on lossy or high-latency links.
+
+UDP does none of this, so a careless UDP app can flood the network — RFC 8085 says UDP apps that
+send a lot **must** add their own congestion control.
+
+## The headers
+
+The size difference says it all — **TCP is 20–60 bytes, UDP is a flat 8 bytes.**
+
+**TCP header (20 bytes minimum):**
+
+| Field | Size | Purpose |
+|-------|------|---------|
+| Source / Dest port | 2 bytes each | which programs are talking |
+| Sequence number | 4 bytes | byte position in the stream |
+| Acknowledgement number | 4 bytes | next byte expected |
+| Flags | `SYN ACK FIN RST PSH URG` | control the connection |
+| Window size | 2 bytes | flow-control window |
+| Checksum | 2 bytes | error check |
+| Options | 0–40 bytes | MSS, window scale, SACK, timestamps |
+
+**UDP header (8 bytes, that's it):**
+
+| Field | Size | Purpose |
+|-------|------|---------|
+| Source port | 2 bytes | sender's port (optional) |
+| Destination port | 2 bytes | receiver's port |
+| Length | 2 bytes | header + data length |
+| Checksum | 2 bytes | error check (optional on IPv4, required on IPv6) |
+
+## Ports & sockets
+
+Both use **16-bit port numbers** (0–65535; well-known ports are under 1024) to multiplex many
+conversations on one machine.
+
+- A **TCP connection** is identified by the **4-tuple**: source IP + source port + dest IP +
+  dest port. One server port (say 443) serves thousands of clients because each has a different
+  4-tuple.
+- A **UDP socket** isn't tied to one peer — one socket can receive from and send to many
+  addresses, since there's no connection state.
+
+## When to use TCP
+
+Reach for TCP when **correct, complete, in-order delivery matters more than latency**, and a
+lost or reordered byte would corrupt the result:
+
+- Web pages and APIs (HTTP/1.1, HTTP/2), HTTPS
+- File transfer (FTP, SFTP), email (SMTP/IMAP/POP3)
+- SSH, remote desktop, database connections
+- Anything where you'd otherwise have to reinvent reliability
+
+## When to use UDP
+
+Reach for UDP when **low latency and low overhead beat guarantees**, and the app can tolerate or
+handle loss itself:
+
+- **Real-time media** — voice/video calls, live streaming. A late packet is useless, so resending
+  it is pointless; better to skip it.
+- **Online games** — frequent small state updates where the newest packet matters most.
+- **Small request/response** — DNS lookups, where a connection setup would cost more than the query.
+- **Broadcast / multicast** — one-to-many, which TCP can't do at all.
+- **As a base for custom transports** that build their own reliability (this is exactly what QUIC does).
+
+## What rides on each
+
+| Protocol / app | Transport | Why |
+|----------------|-----------|-----|
+| HTTP/1.1, HTTP/2, HTTPS | TCP | needs reliable, ordered delivery |
+| HTTP/3 | UDP (via QUIC) | avoids TCP's head-of-line blocking |
+| Email (SMTP, IMAP, POP3), FTP, SSH | TCP | every byte must arrive |
+| DNS | UDP (TCP for big replies) | tiny, fast query/response |
+| DHCP, NTP, SNMP, TFTP, syslog | UDP | small, loss-tolerant |
+| VoIP / video (RTP), WebRTC media | UDP | real-time, drop-don't-resend |
+| Online games | UDP | low-latency state updates |
+| VPNs (WireGuard, OpenVPN-UDP) | UDP | speed; some run on TCP as fallback |
+
+## QUIC & HTTP/3 — the modern twist
+
+The big recent story is **UDP-based transport replacing TCP** for the web. **QUIC** (RFC 9000,
+2021) runs *over* UDP but rebuilds TCP's guarantees in **user space**, fixing TCP's structural
+problems:
+
+- **Faster setup** — it merges the transport and TLS 1.3 handshakes into **1 round trip** (0 for
+  a resumed connection), versus TCP+TLS's 2–3.
+- **No cross-stream head-of-line blocking** — each stream is independent, so one lost packet
+  doesn't stall the others.
+- **Connection migration** — a QUIC connection is identified by a **connection ID**, not the
+  4-tuple, so it survives switching Wi-Fi → cellular without dropping. TCP can't do this.
+- **Encryption is mandatory and built in** (TLS 1.3) — almost the whole packet is encrypted.
+- **Lives in user space**, so it can evolve per app release instead of waiting for OS/kernel
+  upgrades (TCP is "ossified" by kernels and middleboxes).
+
+**HTTP/3 is HTTP over QUIC**, and as of 2026 it carries roughly a third of web traffic. So the
+modern picture is: TCP still carries most of the internet, but the latency-sensitive edge
+(web, mobile) is moving to QUIC-over-UDP.
+
+## Security
+
+**TCP attacks & defenses:**
+
+- **SYN flood** — flood half-open handshakes to exhaust the server. *Defense:* **SYN cookies**
+  (no state until the handshake completes), rate limiting.
+- **Session hijacking / RST injection / spoofing** — guess sequence numbers to inject or reset.
+  *Defense:* randomized initial sequence numbers, challenge ACKs, TCP-AO; encrypt with TLS.
+- Plaintext by default — needs **TLS** on top for confidentiality.
+
+**UDP attacks & defenses:**
+
+- **UDP flood** — blast datagrams at random ports. *Defense:* rate limiting, firewalls, scrubbing.
+- **Reflection / amplification DDoS** — the big one: spoof the victim's IP, send a small query to
+  DNS/NTP/SSDP/memcached servers, which fire huge replies *at the victim* (amplification up to
+  thousands of times). *Defense:* **ingress filtering (BCP 38)** to stop spoofing, disable open
+  resolvers, response-rate limiting.
+- No built-in security — layer **DTLS** (TLS for datagrams) or use **QUIC** (encrypted by default).
+
+## NAT & firewalls
+
+- **TCP is NAT-friendly** — its `SYN`/`FIN`/`RST` flags let routers track connection state
+  clearly.
+- **UDP is trickier** — connectionless, so NATs guess flows from traffic and use short idle
+  timeouts (~30s); apps send **keepalives** to keep the mapping alive, and use **STUN/TURN/ICE**
+  hole-punching for peer-to-peer (the basis of WebRTC). Some strict firewalls block UDP 443
+  entirely, so QUIC apps keep a TCP/HTTP-2 fallback.
+
+## Beyond TCP & UDP
+
+The two aren't the only transports — a few worth knowing as context:
+
+- **SCTP** — reliable like TCP but with **multi-streaming** (no head-of-line blocking) and
+  **multihoming** (multiple IPs). Used in telecom signalling and as the base for WebRTC data
+  channels.
+- **DCCP** — UDP-like (unreliable) *but* with congestion control; shows reliability and
+  congestion control are separate ideas. Niche.
+- **MPTCP** — Multipath TCP: one connection spread across Wi-Fi + cellular at once (used on Apple
+  devices).
+- **DTLS** — "TLS over UDP", the standard way to encrypt datagram traffic (WebRTC, some VPNs).
+
+## Quick comparison
+
+| | TCP | UDP |
+|--|-----|-----|
+| Connection | connection-oriented (handshake) | connectionless |
+| Reliable | yes (ACK + retransmit) | no |
+| Ordered | yes | no |
+| Flow/congestion control | yes | no |
+| Header size | 20–60 bytes | 8 bytes |
+| Setup cost | 1 RTT (+TLS) | 0 RTT |
+| Data model | byte stream | messages (datagrams) |
+| Broadcast/multicast | no | yes |
+| Head-of-line blocking | yes | n/a |
+| Built-in encryption | no (add TLS) | no (add DTLS / use QUIC) |
+| Typical use | web, files, email | media, games, DNS |
+
+## Glossary
+
+- **Datagram** — a self-contained packet (UDP's unit); may arrive, or not, on its own.
+- **Segment** — TCP's unit of data, part of the ongoing byte stream.
+- **Handshake** — the setup exchange before TCP/QUIC send data (TCP's is the 3-way SYN/SYN-ACK/ACK).
+- **ACK** — acknowledgement that data was received.
+- **Sliding window** — TCP's flow-control mechanism (how much unacked data may be in flight).
+- **Head-of-line blocking** — one lost packet stalling everything queued behind it.
+- **RTT** — round-trip time; one there-and-back to the other host.
+- **QUIC** — a modern, encrypted, multiplexed transport built on UDP; carries HTTP/3.
+- **DTLS** — TLS adapted for datagram (UDP) traffic.
+- **Amplification attack** — spoofing a victim's IP so servers blast large replies at them.

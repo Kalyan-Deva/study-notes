@@ -178,6 +178,43 @@ export function SolveSteps() {
   );
 }
 
+const TCP_UDP_ROWS = [
+  { k: "Connection", tcp: "set up first (handshake)", udp: "none — just send" },
+  { k: "Reliable?", tcp: "yes — resends lost data", udp: "no — fire and forget" },
+  { k: "Ordered?", tcp: "yes, in order", udp: "no guarantee" },
+  { k: "Speed", tcp: "slower, more overhead", udp: "fast, low overhead" },
+  { k: "Header", tcp: "20–60 bytes", udp: "8 bytes" },
+  { k: "Flow/congestion control", tcp: "built in", udp: "none (app's job)" },
+  { k: "Best for", tcp: "web, files, email, APIs", udp: "video, voice, games, DNS" },
+];
+
+export function TcpVsUdp() {
+  return (
+    <figure className="not-prose my-5">
+      <div className="overflow-hidden rounded-xl border border-card-border text-sm">
+        <div className="grid grid-cols-[1.3fr_1fr_1fr] bg-card font-semibold">
+          <span className="px-3 py-2" />
+          <span className="border-l border-card-border px-3 py-2 text-accent">TCP</span>
+          <span className="border-l border-card-border px-3 py-2 text-accent">UDP</span>
+        </div>
+        {TCP_UDP_ROWS.map((r) => (
+          <div
+            key={r.k}
+            className="grid grid-cols-[1.3fr_1fr_1fr] border-t border-card-border"
+          >
+            <span className="px-3 py-2 font-medium text-muted">{r.k}</span>
+            <span className="border-l border-card-border px-3 py-2">{r.tcp}</span>
+            <span className="border-l border-card-border px-3 py-2">{r.udp}</span>
+          </div>
+        ))}
+      </div>
+      <figcaption className="mt-2 text-center text-xs text-muted">
+        TCP trades speed for guarantees; UDP trades guarantees for speed.
+      </figcaption>
+    </figure>
+  );
+}
+
 const COMPLEXITIES = [
   { o: "O(1)", name: "constant", ex: "hash lookup, array index" },
   { o: "O(log n)", name: "logarithmic", ex: "binary search" },
