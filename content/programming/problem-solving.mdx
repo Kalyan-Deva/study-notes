@@ -1,0 +1,430 @@
+---
+title: "Problem Solving"
+category: "Programming"
+summary: "How to actually solve programming problems — the process, every pattern and when to use it, complexity, data structures, worked examples, and how to get good."
+order: 1
+updated: "2026-06-17"
+---
+
+Solving coding problems is a *skill*, not talent — and like any skill it's mostly a set of
+repeatable habits plus a library of patterns I can recognise. This note is the whole skill in
+one place: the process I run, the patterns and their tells, the complexity I need to hit, the
+data structures, worked examples, and how to actually get good.
+
+The single most important idea: **a problem is solved when I match it to a pattern I know.**
+Everything below is about building that matching reflex.
+
+## The process
+
+Every problem, same loop. The mistake almost everyone makes is jumping straight to code — slow
+down on the first two steps and the rest gets easy.
+
+<SolveSteps />
+
+Two rules that sit on top of this:
+
+- **Brute force first, always.** Get *a* correct answer even if it's slow. It proves I
+  understand the problem, gives me something to test against, and shows me the wasted work to
+  cut. Then optimise.
+- **Don't optimise before it's correct.** Premature optimisation just adds bugs.
+
+## Understand the problem
+
+I can't solve what I haven't pinned down. Before any code:
+
+- **Restate it in my own words.** If I can't, I don't understand it yet.
+- **Inputs and outputs:** exact types and format. Indices or values? A count or the list?
+  In place or a new structure? One answer or all of them?
+- **Constraints:** how big is `n`? Value ranges (overflow?)? Sorted already? Can it be empty,
+  negative, have duplicates? Constraints are huge hints — they basically tell me the allowed
+  complexity (see below).
+- **Work the given example by hand** and make my own — big enough to be general, not a special
+  case.
+- **List edge cases now:** empty, one element, two elements, duplicates, negatives/zero, max
+  values, already sorted, reverse sorted, no valid answer.
+- **Ask clarifying questions** (in an interview, out loud): empty/null allowed? bounds on `n`?
+  negatives or duplicates? multiple valid answers? in place? what to return when there's no
+  answer?
+
+## Plan it
+
+- **Get the brute force** and say its complexity out loud.
+- **Solve a small case by hand** and watch what my brain actually does — that procedure is
+  often the algorithm.
+- **Ask "what work am I repeating?"** The answer names the optimisation: repeated lookups →
+  a hash map; recompute over a sorted thing → two pointers / binary search; recompute over a
+  sliding range → sliding window; repeated subproblems → DP.
+- **Pick the data structure deliberately** — the right one usually makes the algorithm obvious.
+- **Write quick pseudocode** and trace it on my example *and* an edge case before coding.
+
+## Pattern recognition — the cheat sheet
+
+This is the highest-value part of the whole note. Train these "if I see X, try Y" reflexes and
+most problems give themselves away:
+
+| If I see… | Reach for |
+|-----------|-----------|
+| Sorted array + find a pair/triplet/target | **Two pointers** or **binary search** |
+| Contiguous **subarray/substring**, longest/shortest/max/min | **Sliding window** |
+| Many **range-sum** queries | **Prefix sums** (range updates → **difference array**) |
+| "Seen before?", frequency, find a complement | **Hash map / set** |
+| "Next/previous greater or smaller element", histogram | **Monotonic stack** |
+| Sliding window max/min | **Monotonic deque** |
+| Cycle / middle / nth-from-end of a linked list | **Fast & slow pointers** |
+| "Minimise the maximum" / "max X such that feasible" | **Binary search on the answer** |
+| Generate **all** subsets / permutations / combinations | **Backtracking** |
+| Count ways / min-max cost, with overlapping subproblems | **Dynamic programming** |
+| Shortest path in an **unweighted** graph, fewest steps | **BFS** |
+| Explore all paths, connectivity, cycle detection | **DFS** |
+| Weighted shortest path (non-negative) | **Dijkstra** |
+| Ordering with dependencies/prerequisites | **Topological sort** |
+| "Same group?", connected components, undirected cycle | **Union-Find (DSU)** |
+| Top-K / Kth largest / merge K lists / running median | **Heap** |
+| Overlapping intervals / meeting rooms | **Sort + sweep / merge** |
+| O(1) space, missing/unique number, subsets of a small set | **Bit manipulation** |
+
+> The general move behind all of these: **brute force → spot the repeated work → pick the
+> pattern that removes it.**
+
+## Big-O and complexity
+
+Big-O describes how the work **grows** as the input grows — it ignores hardware and constant
+factors, and by convention we mean the **worst case**. Drop constants and smaller terms:
+`O(2n + 5)` is just `O(n)`; `O(n² + n)` is `O(n²)`.
+
+<ComplexityScale />
+
+How to read code:
+
+- **Sequential** blocks → add, keep the biggest. **Nested loops** → multiply (`O(n²)`).
+- A loop that **halves** each time → `O(log n)`. Halving loop with an `O(n)` body → `O(n log n)`.
+- **Recursion** → (work per call) × (number of calls); draw the recursion tree.
+- **Amortised** = average over a worst-case *sequence* (e.g. appending to a dynamic array is
+  `O(1)` amortised even though the occasional resize is `O(n)`).
+- **Space** counts extra memory — and the **recursion call stack** counts too (depth `d` →
+  `O(d)` space).
+
+## Constraints → which complexity
+
+`n` basically tells me the algorithm. Rule of thumb: aim for roughly **10⁸ operations** or
+fewer.
+
+| Input size `n` | Target complexity | Likely technique |
+|----------------|-------------------|------------------|
+| n ≤ 10–12 | O(n!) | permutations, brute force |
+| n ≤ 20–25 | O(2ⁿ) | subsets, **bitmask DP**, backtracking |
+| n ≤ 500 | O(n³) | triple-loop DP, Floyd–Warshall |
+| n ≤ 5,000 | O(n²) | quadratic DP, all pairs |
+| n ≤ 100,000 | O(n log n) | sorting, heap, binary search on answer |
+| n ≤ 1,000,000 | O(n) | one pass, two pointers, prefix sums, hashing |
+| n ≥ 1,000,000,000 | O(log n) or O(1) | math / formula, fast exponentiation |
+
+So if `n ≤ 20`, an exponential solution is *expected*. If `n` is a million, I need linear.
+
+## Data structures cheat sheet
+
+Pick by what I need to do fastest:
+
+| Structure | Fast at | Slow at | Use it when |
+|-----------|---------|---------|-------------|
+| **Array / dynamic array** | index access O(1), append O(1)* | middle insert/delete O(n) | random access, known size |
+| **Hash map / set** | lookup/insert/delete ~O(1) | no order, no range queries | "seen it?", counts, complements |
+| **Linked list** | insert/delete at a known node O(1) | no random access, search O(n) | lots of splicing; stacks/queues |
+| **Stack (LIFO)** | push/pop/peek O(1) | searching | undo, DFS, matching brackets |
+| **Queue / deque (FIFO)** | push/pop both ends O(1) | searching | BFS, sliding window |
+| **Heap / priority queue** | peek min/max O(1), push/pop O(log n) | arbitrary search O(n) | top-K, scheduling, Dijkstra |
+| **Balanced BST (TreeMap)** | search/insert/delete O(log n), **ordered** | slower than a hash | sorted keys + range/floor/ceil |
+| **Trie** | prefix search O(L) | high memory | autocomplete, dictionaries |
+| **Graph (adjacency list)** | space O(V+E), iterate neighbours | "is u–v an edge?" O(deg) | most graphs (sparse) |
+| **Union-Find (DSU)** | union/find ~O(1) | no splitting, no paths | grouping, connectivity, cycles |
+
+\* dynamic-array append is amortised O(1); a plain hash map is *average* O(1) but worst-case
+O(n). Heap insert/extract is O(log n), peek O(1), and building a heap from n items is O(n).
+
+## Array & string patterns
+
+- **Two pointers.** *When:* sorted array, find a pair/triplet, palindrome check, in-place
+  filtering. *Idea:* two indices move in coordination instead of nested loops — converging from
+  both ends, or both going forward (one writes, one scans). *Cost:* O(n), O(1) space.
+  *Examples:* Two Sum II, 3Sum, Container With Most Water, Move Zeroes.
+- **Sliding window.** *When:* a **contiguous** subarray/substring with a running condition
+  (longest, shortest, sum, distinct count). *Idea:* grow the window on the right, shrink from
+  the left when it breaks the rule; reuse the last computation instead of recomputing.
+  *Cost:* O(n). *Examples:* Longest Substring Without Repeating Characters, Minimum Size
+  Subarray Sum, Minimum Window Substring.
+- **Fast & slow pointers.** *When:* linked-list cycle, middle node, or a sequence defined by
+  `next = f(x)`. *Idea:* slow moves 1, fast moves 2; if there's a loop they meet. *Cost:* O(n),
+  O(1) space. *Examples:* Linked List Cycle, Happy Number, Find the Duplicate Number.
+- **Prefix sums / difference arrays.** *When:* many range-sum queries, or "subarray sums to K".
+  *Idea:* precompute cumulative sums so a range sum is O(1); a hash map of prefix sums finds
+  subarrays summing to K in one pass. The inverse (difference array) makes many range *updates*
+  O(1) each. *Examples:* Subarray Sum Equals K, Range Sum Query, Car Pooling.
+- **Hashing.** *When:* "have I seen this?", frequency counts, find a complement, group by key.
+  *Idea:* trade space for time — turn an O(n²) search into O(n) lookups. *Examples:* Two Sum,
+  Group Anagrams, Top K Frequent, Longest Consecutive Sequence.
+- **Sorting first.** *When:* the problem gets easy once the data is in order (pairs, closest,
+  intervals, greedy). Pay the O(n log n) up front to unlock two pointers / binary search.
+- **Monotonic stack / deque.** *When:* "next greater/smaller element" or "window max/min".
+  *Idea:* keep the stack sorted by popping elements the current one beats; each element is
+  pushed/popped once. *Cost:* O(n). *Examples:* Daily Temperatures, Largest Rectangle in
+  Histogram, Sliding Window Maximum.
+- **Intervals.** *When:* overlapping ranges, merging, meeting rooms. *Idea:* sort by start, then
+  sweep — merge if the next start is ≤ the current end; or use +1/−1 events and a running count
+  for "max concurrent". *Cost:* O(n log n). *Examples:* Merge Intervals, Meeting Rooms II.
+
+## Searching & optimising
+
+- **Binary search (sorted data).** *When:* sorted/rotated array, find an element or insertion
+  point. *Idea:* compare to the middle, throw away half. Watch the bounds and use
+  `mid = lo + (hi - lo) / 2` to avoid overflow. *Cost:* O(log n).
+- **Binary search on the answer.** *The high-value one.* *When:* "minimise the maximum" or "the
+  smallest/largest value such that some condition holds", and that condition is **monotonic**
+  (if x works, everything bigger does too). The input doesn't need to be sorted — the *answer
+  range* is what's monotonic. *Idea:* write `feasible(x)` and binary-search the answer space.
+  *Examples:* Koko Eating Bananas, Capacity to Ship Packages in D Days, Split Array Largest Sum.
+- **Greedy.** *When:* a simple "best next move" (often after sorting) gives the global optimum.
+  *Catch:* only correct if the problem has the greedy-choice property — if I can't argue it,
+  it's probably DP. *Examples:* Interval Scheduling (pick earliest finish time), Huffman coding,
+  Jump Game.
+
+## Recursion, backtracking & DP
+
+- **Recursion.** A function that calls itself on a smaller input. Needs a **base case** (stop)
+  and a **recursive case** (shrink toward the base). Each call uses stack space — depth `d` is
+  `O(d)` memory, and too deep = stack overflow.
+- **Backtracking.** *When:* generate/try **all** subsets, permutations, combinations, or solve
+  a constraint puzzle (N-Queens, Sudoku, word search). *Template:* **choose → explore →
+  unchoose**, and *prune* branches that can't work. *Cost:* exponential (that's expected — see
+  the constraints table). *Examples:* Subsets, Permutations, Combination Sum, Generate
+  Parentheses.
+- **Divide and conquer.** Split into independent halves, solve each, combine. Merge sort and
+  quicksort are the classics; both O(n log n) average.
+- **Dynamic programming.** *When:* counting ways or min/max cost where choices create
+  **overlapping subproblems** with **optimal substructure** (the brute-force recursion is
+  exponential because it recomputes the same things). *Method:*
+  1. **Define the state** — the minimal info naming a subproblem (`dp[i]`, `dp[i][j]`).
+  2. **Write the recurrence** — usually "take vs skip" or "best over previous choices".
+  3. **Base cases**, then an **order** that computes dependencies first.
+  *Two styles:* **memoisation** (top-down recursion + cache) or **tabulation** (bottom-up
+  table). Often I can drop the table to a couple of variables to save space.
+
+  Classics worth memorising:
+
+  | Problem | State / recurrence | Cost |
+  |---------|--------------------|------|
+  | Climbing Stairs | `dp[i] = dp[i-1] + dp[i-2]` | O(n) |
+  | House Robber | `dp[i] = max(dp[i-1], dp[i-2] + nums[i])` | O(n) |
+  | Coin Change (min) | `dp[a] = min(dp[a-c] + 1)` over coins c | O(amount × coins) |
+  | 0/1 Knapsack | `dp[i][w] = max(skip, take item i)` | O(n × W) |
+  | Longest Increasing Subsequence | `dp[i] = 1 + max(dp[j])` for `j < i` with `a[j] < a[i]` | O(n²) or O(n log n) |
+  | Longest Common Subsequence | match → `dp[i-1][j-1]+1`, else max | O(n × m) |
+  | Edit Distance | min(insert, delete, replace) | O(n × m) |
+
+## Graphs & trees
+
+- **Adjacency list vs matrix.** List = O(V+E) space, great for sparse graphs (the default).
+  Matrix = O(V²) space but O(1) "is there an edge?".
+- **BFS.** *When:* shortest path in an **unweighted** graph, fewest steps, level-order.
+  *Idea:* a queue expands outward level by level; first time you reach a node is the shortest.
+  *Cost:* O(V+E). *Examples:* Word Ladder, Rotting Oranges.
+- **DFS.** *When:* explore all paths, connectivity, regions, cycle detection. *Idea:* recursion
+  or a stack, go deep then backtrack. *Cost:* O(V+E). *Examples:* Number of Islands, Course
+  Schedule.
+- **Topological sort.** *When:* ordering with prerequisites (only on a DAG — a cycle means no
+  valid order). *Idea:* repeatedly take nodes with no remaining dependencies (Kahn's BFS), or
+  reverse DFS finish order. *Examples:* Course Schedule II, build order.
+- **Dijkstra.** *When:* weighted shortest path with **non-negative** weights. *Idea:* a min-heap
+  always expands the closest node so far. *Cost:* O((V+E) log V). (Negative weights →
+  Bellman-Ford.)
+- **Union-Find (DSU).** *When:* connected components, "same group?", undirected cycle detection,
+  Kruskal's MST. *Idea:* `find` the root (with path compression) and `union` by rank. *Cost:*
+  ~O(1) amortised.
+- **Tree traversals.** **Inorder** (left, node, right) gives a BST's keys in sorted order.
+  **Preorder** for copy/serialise, **postorder** for deleting or child-dependent values, and
+  **level-order (BFS)** for "by level" questions. All O(n); DFS uses O(height) stack space.
+
+## Heaps & bit tricks
+
+- **Heap / priority queue.** *When:* top-K, Kth largest, merge K sorted lists, running median.
+  *Idea:* keep a heap of size K (a **min-heap** for the K *largest*); for a running median use
+  **two heaps** (a max-heap for the low half, a min-heap for the high half). *Cost:* push/pop
+  O(log n). *Examples:* Kth Largest, Top K Frequent, Find Median from Data Stream.
+- **Bit manipulation.** *When:* O(1) space tricks, "single/missing number", subsets of a small
+  set (≤ ~20 items). *Handy moves:* check bit `(x >> i) & 1`, set `x | (1 << i)`, clear
+  `x & ~(1 << i)`. `x & (x - 1)` removes the lowest set bit (counts bits fast). XOR cancels
+  pairs, so XOR-ing everything leaves the unique element. *Examples:* Single Number, Counting
+  Bits, Missing Number.
+
+## Worked example 1 — Two Sum
+
+**Problem:** given `nums` and `target`, return the indices of the two numbers that add to
+`target`.
+
+1. **Understand.** Return *indices*, not values. Duplicates allowed (`[3,3]`, target 6). Not
+   sorted. Exactly one answer.
+2. **Brute force.** Check every pair with two loops → if `nums[i] + nums[j] == target`, return
+   `[i, j]`. That's **O(n²)**. Correct, but slow.
+3. **Spot the repeated work.** For each `x`, I'm really asking: "have I already seen
+   `target - x`?" That's a *lookup*, not a search — and a hash map does lookups in O(1).
+4. **Optimal — one pass with a hash map (O(n) time, O(n) space):**
+
+```text
+function twoSum(nums, target):
+    seen = {}                       # value -> index
+    for i in range(len(nums)):
+        complement = target - nums[i]
+        if complement in seen:
+            return [seen[complement], i]
+        seen[nums[i]] = i           # store AFTER checking, so we never reuse an index
+    return []
+```
+
+5. **Test.** `[3,3], 6` → stores 3→0, then sees complement 3 at index 0 → `[0,1]`. Negatives
+   `[-3,4,3,90], 0` → `[0,2]`. Single element → no match.
+
+## Worked example 2 — Longest substring without repeating characters
+
+**Problem:** length of the longest substring (contiguous) of `s` with no repeated character.
+
+- **Brute force:** check every substring for duplicates → O(n³) (or O(n²) with a set).
+- **Insight:** if `s[left..right-1]` already has no repeats, extending only needs me to check if
+  `s[right]` is *already in the window* — one O(1) lookup. So keep a single window with two
+  pointers; each character enters and leaves once.
+- **Optimal — sliding window, O(n) time:**
+
+```text
+function lengthOfLongest(s):
+    last = {}                       # char -> most recent index
+    left = 0
+    best = 0
+    for right in range(len(s)):
+        c = s[right]
+        if c in last and last[c] >= left:
+            left = last[c] + 1      # jump past the previous copy
+        last[c] = right
+        best = max(best, right - left + 1)
+    return best
+```
+
+The guard `last[c] >= left` matters — a repeat *outside* the window must be ignored, or `left`
+jumps backwards (classic bug).
+
+## Common mistakes
+
+- **Off-by-one** — `<` vs `<=`, `n` vs `n-1`, window length is `right - left + 1`. Test sizes
+  0, 1, 2.
+- **Integer overflow** — in Java/C++ use 64-bit for sums; midpoint as `lo + (hi - lo) / 2`.
+  (Python ints don't overflow, but the algorithm still might be wrong elsewhere.)
+- **Empty / edge inputs** — empty, single element, all equal, all distinct, negatives, no
+  answer. Run the checklist before declaring it done.
+- **Mutating while iterating** — removing from a list/dict inside its own loop. Iterate a copy
+  or collect changes and apply after.
+- **Missing/wrong recursion base case** — the top cause of stack overflow. Define base cases
+  first; make sure every call shrinks toward them.
+- **TLE (too slow)** — correct but over the time limit. Usually means the wrong complexity
+  class; derive the target from the constraints *before* coding.
+- **Misreading the problem** — substring vs subsequence, indices vs values, count vs existence,
+  0- vs 1-indexed. Restate it first.
+
+## How to choose your approach
+
+A checklist for any new problem:
+
+1. What exactly is asked? (output type, contiguous or not, one answer or all)
+2. What does `n` allow? → that fixes my target complexity (table above).
+3. Is it sorted, or would sorting help? → binary search / two pointers.
+4. Can I trade space for time with a hash map? (the most common win)
+5. Does it match a known pattern? (the cheat sheet)
+6. Are there overlapping subproblems? → memoise / DP.
+7. Get the brute force and its complexity.
+8. Only then optimise, aiming at the target from step 2.
+
+## Debugging
+
+- **Reproduce** with the smallest input that fails; shrink it until minimal.
+- **Read the error / stack trace** bottom-up; find the first line of *my* code.
+- **Bisect** — comment out / `git bisect` to halve the search space until the bug is cornered.
+- **Hypothesis, then test** — don't change code randomly; predict, then check with a
+  print/breakpoint.
+- **Rubber-duck it** — explain the code line by line out loud; the wrong assumption usually
+  surfaces mid-sentence.
+- **Check assumptions** — is the input what I think (type, sorted, non-null)? Is the line even
+  reached?
+- Usual suspects: off-by-one, null/empty, boundaries, overflow, wrong base case, bad initial
+  values.
+
+## Testing & edge cases
+
+Run code (mentally or for real) against: empty, single element, two elements, duplicates,
+negatives and zero, max/overflow values, already sorted, reverse sorted, very large input
+(speed + recursion depth), and the no-valid-answer case (correct sentinel like -1 or empty).
+
+## Interview tactics
+
+- **Think out loud** — they're grading the process, not just the final code. Silence = no
+  signal.
+- **Clarify before coding** — restate, confirm I/O, ask about edge cases.
+- **State a brute force fast**, give its complexity, then optimise (BUD: Bottlenecks,
+  Unnecessary work, Duplicated work).
+- **State time and space complexity** for both, and *why*.
+- **Take hints gracefully**; if stuck, fall back to brute force and code that rather than
+  freeze.
+- **Test your own code** — assume there's a bug and hunt for it before they point it out.
+
+## How to get good
+
+The plan that actually works:
+
+1. **Fundamentals first** — data structures, sorting, binary search, recursion, BFS/DFS, Big-O.
+   I can't spot a pattern I don't have the pieces for.
+2. **Study by pattern, not at random.** Learn one pattern, solve 4–8 problems on it until the
+   trigger is automatic, then move on. The **Grokking** patterns and the **NeetCode 150**
+   roadmap (Arrays → Two Pointers → Sliding Window → Stack → Binary Search → Linked List →
+   Trees → Tries → Heap → Backtracking → Graphs → DP → Greedy → Intervals → Bit) are the
+   standard sequence.
+3. **Mix it up.** Once patterns are solid, do randomised sets so I practise *identifying* the
+   pattern cold — that's the real skill.
+4. **Mock interviews** — timed and spoken, to train communication and pressure.
+
+Habits that make it stick:
+
+- **~150 problems done well** (Blind 75 / NeetCode 150) beats grinding hundreds badly.
+- **Spaced repetition** — re-solve a problem after a few days, then a week. Re-solving from a
+  blank page beats re-reading.
+- **Don't memorise solutions — memorise patterns and reasoning.** Memorised code dies the
+  moment the problem twists.
+- **When stuck, timebox ~20–30 min,** then take a *hint* (not the full solution). If you do read
+  the solution, close it and re-implement from scratch, and revisit it later.
+
+**Resources:**
+
+- **Books:** *Cracking the Coding Interview* (the all-rounder), *Elements of Programming
+  Interviews* (harder), Skiena's *Algorithm Design Manual* (how to think + a catalogue), *CLRS*
+  (deep theory), the free *Competitive Programmer's Handbook*.
+- **Sites:** LeetCode (the problem bank), NeetCode 150 (structured roadmap + videos), Codeforces
+  (timed contests, speed), HackerRank (fundamentals), AlgoExpert (curated course).
+
+## Language tips
+
+- **Python:** `dict`/`set` (O(1) avg), `collections.Counter` and `defaultdict`,
+  `collections.deque` for BFS/queues (never `list.pop(0)`, it's O(n)), `heapq` (min-heap —
+  negate values for a max-heap), `functools.lru_cache` for instant DP memoisation. Bump
+  `sys.setrecursionlimit` for deep recursion.
+- **C++:** `unordered_map`/`unordered_set` (O(1) avg) vs ordered `map`/`set` (O(log n)),
+  `priority_queue`, `deque`. Use `long long` for big sums. Fast IO:
+  `ios_base::sync_with_stdio(false); cin.tie(NULL);` and `"\n"` instead of `endl`.
+- **Java:** `HashMap`/`HashSet`, ordered `TreeMap`/`TreeSet`, `ArrayDeque` (preferred
+  stack/queue), `PriorityQueue`, and `StringBuilder` (never `+=` a String in a loop). Use `long`
+  for sums; `BufferedReader` for fast input.
+
+## Glossary
+
+- **Brute force** — try everything directly; the correct-but-slow baseline.
+- **Big-O** — how the work grows with input size (worst case).
+- **Amortised** — average cost per operation across a worst-case sequence (e.g. dynamic-array
+  append).
+- **DP state / transition** — the *state* names a subproblem; the *transition* is the recurrence that builds it from smaller states.
+- **Greedy-choice property** — taking the locally best option still gives the global optimum.
+- **Optimal substructure** — the best answer is built from best answers to subproblems.
+- **DAG** — directed acyclic graph (no cycles); the only graph you can topologically sort.
+- **TLE** — Time Limit Exceeded: correct but too slow.

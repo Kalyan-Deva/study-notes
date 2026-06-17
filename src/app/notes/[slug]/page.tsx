@@ -6,12 +6,27 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypePrettyCode, { type Options as PrettyCodeOptions } from "rehype-pretty-code";
 import { getAllSlugs, getNoteBySlug } from "@/lib/content";
-import { Encapsulation, Handshake, LayerStack } from "@/components/figures";
+import {
+  ComplexityScale,
+  Encapsulation,
+  Handshake,
+  LayerStack,
+  SolveSteps,
+} from "@/components/figures";
 import { OnThisPage } from "@/components/on-this-page";
 
-const mdxComponents = { LayerStack, Encapsulation, Handshake };
+const mdxComponents = {
+  LayerStack,
+  Encapsulation,
+  Handshake,
+  SolveSteps,
+  ComplexityScale,
+};
 
-export const dynamicParams = false;
+// Pre-render known notes, but still render any new note added at runtime
+// (a missing slug 404s via notFound() below). This keeps freshly-added MDX
+// files working without depending on a cached generateStaticParams list.
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));

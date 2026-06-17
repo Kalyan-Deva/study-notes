@@ -144,3 +144,74 @@ export function Handshake() {
     </figure>
   );
 }
+
+const SOLVE_STEPS = [
+  { n: 1, name: "Understand", note: "restate it, note inputs/outputs, constraints, edge cases" },
+  { n: 2, name: "Match", note: "what kind of problem is this? which pattern fits?" },
+  { n: 3, name: "Plan", note: "brute force first, then the better idea; pick data structures" },
+  { n: 4, name: "Code", note: "turn the plan into clean code" },
+  { n: 5, name: "Test", note: "run edge cases and trace it by hand" },
+  { n: 6, name: "Optimize", note: "state the complexity, cut repeated work, improve" },
+];
+
+export function SolveSteps() {
+  return (
+    <figure className="not-prose my-5">
+      <div className="overflow-hidden rounded-xl border border-card-border">
+        {SOLVE_STEPS.map((s) => (
+          <div
+            key={s.n}
+            className={`flex items-center gap-3 px-3 py-2 ${s.n === 1 ? "" : "border-t border-card-border"}`}
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-accent/15 text-sm font-semibold text-accent">
+              {s.n}
+            </span>
+            <span className="w-24 shrink-0 font-medium">{s.name}</span>
+            <span className="flex-1 text-sm text-muted">{s.note}</span>
+          </div>
+        ))}
+      </div>
+      <figcaption className="mt-2 text-center text-xs text-muted">
+        The loop I run on every problem. Don't skip step 1 — most wrong answers start there.
+      </figcaption>
+    </figure>
+  );
+}
+
+const COMPLEXITIES = [
+  { o: "O(1)", name: "constant", ex: "hash lookup, array index" },
+  { o: "O(log n)", name: "logarithmic", ex: "binary search" },
+  { o: "O(n)", name: "linear", ex: "scan the array once" },
+  { o: "O(n log n)", name: "linearithmic", ex: "a good sort" },
+  { o: "O(n²)", name: "quadratic", ex: "nested loops / all pairs" },
+  { o: "O(2ⁿ)", name: "exponential", ex: "try every subset" },
+  { o: "O(n!)", name: "factorial", ex: "try every ordering" },
+];
+
+export function ComplexityScale() {
+  const n = COMPLEXITIES.length;
+  return (
+    <figure className="not-prose my-5 space-y-1.5">
+      {COMPLEXITIES.map((c, i) => {
+        const width = 14 + (i * 86) / (n - 1);
+        const hue = 130 - (i * 130) / (n - 1);
+        return (
+          <div key={c.o} className="flex items-center gap-3">
+            <span className="w-20 shrink-0 font-mono text-xs">{c.o}</span>
+            <span
+              className="h-2.5 rounded-full"
+              style={{ width: `${width}%`, backgroundColor: `hsl(${hue} 65% 50%)` }}
+            />
+            <span className="shrink-0 text-xs text-muted">
+              {c.name} — {c.ex}
+            </span>
+          </div>
+        );
+      })}
+      <figcaption className="pt-1 text-xs text-muted">
+        Best (green, top) to worst (red, bottom). The bar is how fast the work grows as the
+        input grows.
+      </figcaption>
+    </figure>
+  );
+}
