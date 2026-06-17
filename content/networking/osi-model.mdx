@@ -1,0 +1,370 @@
+---
+title: "OSI Model"
+category: "Networking"
+summary: "The complete OSI reference — every layer, its protocols, devices, headers, addressing, security, and how it maps to TCP/IP. One page, everything."
+order: 1
+updated: "2026-06-17"
+---
+
+The OSI model splits "how data travels across a network" into **7 layers**. Each layer has one
+job, and only talks to the layer right above and below it — it trusts the lower layers and
+doesn't care *how* they work. Real networks run on TCP/IP, but everyone still explains and
+troubleshoots using these 7 layers, so it's the thing to know.
+
+- **OSI = Open Systems Interconnection.** "Open" means built on public, vendor-neutral
+  standards so any maker's gear works together.
+- It's a **reference model** — a way of thinking and a shared vocabulary, not the actual
+  software. The standard is **ISO/IEC 7498-1** (same text as ITU-T **X.200**), published in
+  **1984**. The 7-layer idea came from Charles Bachman / Hubert Zimmermann in the late 1970s.
+- ISO also wrote real OSI *protocols* to go with it (TP0–TP4, CLNP, X.400, X.500…), but they
+  lost to TCP/IP. Only a few (X.500 → LDAP, IS-IS, ASN.1) survived.
+
+## The 7 layers
+
+<LayerStack />
+
+Two ways to remember the order:
+
+- **Top to bottom (7 → 1):** *All People Seem To Need Data Processing.*
+- **Bottom to top (1 → 7):** *Please Do Not Throw Sausage Pizza Away.*
+
+Quick split: layers **7–5 are software** on my device (the app side), layers **4–1 move the
+bits** from A to B (the network side).
+
+## How data moves
+
+Each layer only really does two things: it talks **down** to the layer below (to actually send
+something) and **sideways** to the *same layer* on the other machine (in theory). That sideways
+chat is virtual — the data really goes all the way down my stack, across the wire, and back up
+the other side.
+
+A few words I'll keep using:
+
+- **PDU (Protocol Data Unit)** — the chunk a layer hands to its twin on the other side. Each
+  layer has its own name for it (see below).
+- **Header** — the small label a layer sticks on the front of the data. Layer 2 also adds a
+  **trailer** at the end (for an error check).
+- **Encapsulation** — sending: going *down*, each layer wraps the data in its own header.
+- **Decapsulation** — receiving: going *up*, each layer peels its own header back off.
+
+<Encapsulation />
+
+Like envelopes: my letter goes in an envelope, then a bigger one, then a bigger one — the
+other side opens them in reverse.
+
+**Data unit (PDU) at each layer:**
+
+| Layers | Name |
+|--------|------|
+| 7 · 6 · 5 (App, Pres, Session) | Data |
+| 4 Transport | Segment (TCP) / Datagram (UDP) |
+| 3 Network | Packet |
+| 2 Data Link | Frame |
+| 1 Physical | Bits |
+
+One more pair of words:
+
+- **Connection-oriented** — set up first, keep track, guarantee delivery (like a phone call).
+  Example: **TCP**.
+- **Connectionless** — just fire it off, no setup, no guarantees (like posting a letter).
+  Examples: **UDP, IP**.
+
+## Layer 7: Application
+
+- **Job:** the layer my apps actually talk to. **It is not the app itself** — it's the
+  *protocol* the app speaks. A browser is the app; **HTTP** is the layer-7 protocol it uses.
+- **Gives me:** web pages, email, file transfer, name lookups, remote login, time sync.
+- **Key protocols (and ports):**
+  - **HTTP (80) / HTTPS (443)** — the web.
+  - **DNS (53)** — turns names into IP addresses.
+  - **SMTP (25/587)** — send email; **IMAP (143)** / **POP3 (110)** — read email.
+  - **FTP (20/21)**, **SFTP (22, over SSH)**, **TFTP (69)** — files.
+  - **SSH (22)** — secure remote shell; **Telnet (23)** — old, plaintext, avoid.
+  - **DHCP (67/68)** — hands out IP addresses automatically.
+  - **SNMP (161/162)** — monitor devices; **NTP (123)** — clock sync; **LDAP (389)** —
+    directories (Active Directory); **RDP (3389)** — remote desktop.
+- **Devices:** proxies, **WAF** (web application firewall), API gateways, layer-7 load
+  balancers.
+- **Data unit:** Data.
+
+## Layer 6: Presentation
+
+- **Job:** the "translator". Makes sure data sent by one side is *readable* by the other.
+- **Does:**
+  - **Encryption / decryption** — most famously **TLS** (old name SSL).
+  - **Compression** — shrink data for the trip.
+  - **Encoding** — character sets (**ASCII**, **Unicode/UTF-8**, EBCDIC) and file formats
+    (JPEG, PNG, MP4, MP3).
+- **Heads up on TLS:** it doesn't fit the model cleanly. By *function* (encryption) it's
+  layer 6, but it actually runs on top of TCP, so people also call it "between 4 and 7." OSI is
+  a guideline, not a law.
+- These days this layer is usually handled inside the app or a library, not as a separate step.
+- **Data unit:** Data.
+
+## Layer 5: Session
+
+- **Job:** open, manage, and close the **conversation** (session) between two machines.
+- **Does:**
+  - Starts and ends sessions cleanly.
+  - **Dialog control** — decides who talks when (one-way, take-turns, or both at once).
+  - **Checkpoints** — drops "bookmarks" into a long transfer so it can **resume** from the last
+    checkpoint instead of restarting if the link drops.
+- **Examples:** sockets (the programming interface), RPC, NetBIOS, login sessions.
+- **In TCP/IP there is no session layer** — apps handle this themselves (e.g. HTTP cookies, TLS
+  session resume).
+- **Data unit:** Data.
+
+## Layer 4: Transport
+
+- **Job:** get data **end to end between two programs**, using **port numbers** to know which
+  program. This is the first layer that thinks about the whole journey, not just one hop.
+- **Does:** splits data into pieces, can reassemble in order, and (for TCP) makes it reliable.
+- **The two protocols:**
+  - **TCP** — connection-based, reliable, ordered. Resends what's lost, controls speed. Used
+    for web, email, files. Heavier.
+  - **UDP** — connectionless, no guarantees, tiny 8-byte header, fast. Used for video calls,
+    streaming, games, DNS, DHCP. Light.
+
+**TCP sets up with a 3-way handshake:**
+
+<Handshake />
+
+It closes politely too (FIN → ACK → FIN → ACK), or slams the door with **RST**.
+
+- **How TCP stays reliable:** every byte has a **sequence number**; the receiver sends **ACKs**
+  for what it got; missing data is **retransmitted**. A **sliding window** (flow control) stops
+  me flooding a slow receiver, and **congestion control** (slow start, then back off on loss)
+  stops me flooding the network.
+- **MSS** = the biggest payload TCP puts in one segment, usually **1460 bytes** (1500 MTU − 20
+  IP − 20 TCP).
+
+**TCP header (20 bytes, key fields):**
+
+| Field | Size | What it's for |
+|-------|------|---------------|
+| Source / Dest port | 16 bits each | which programs are talking |
+| Sequence number | 32 bits | byte position in the stream |
+| Acknowledgement number | 32 bits | next byte expected |
+| Flags | SYN ACK FIN RST PSH URG | control the connection |
+| Window size | 16 bits | flow control (how much I can receive) |
+| Checksum | 16 bits | error check |
+
+**UDP header** is just 4 fields, 8 bytes total: source port, dest port, length, checksum.
+
+- **Ports:** **well-known 0–1023**, registered 1024–49151, ephemeral 49152–65535 (the random
+  port my machine uses as the sender).
+- **A socket** = IP address + port. A full connection = source IP+port and dest IP+port.
+- **Devices:** stateful firewalls, layer-4 load balancers.
+- **Data unit:** Segment (TCP) / Datagram (UDP).
+
+## Layer 3: Network
+
+- **Job:** get **packets** from one network to another (**routing**) using logical **IP
+  addresses**. Routers live here.
+- **Does:** logical addressing, picking the best path, splitting packets that are too big
+  (**fragmentation**), and a hop counter (**TTL**) so lost packets don't loop forever.
+
+**IP addresses:**
+
+- **IPv4** — 32-bit, written like `192.168.1.10`. About 4.3 billion total, which ran out.
+- **Private ranges (RFC 1918)** — not used on the public internet: `10.0.0.0/8`,
+  `172.16.0.0/12`, `192.168.0.0/16`. `127.0.0.1` is loopback (myself).
+- **Subnet mask / CIDR** (like `/24`) splits an address into a **network part** and a **host
+  part**.
+- **IPv6** — 128-bit (e.g. `2001:db8::1`), basically unlimited addresses, simpler fixed header,
+  no broadcast, made to replace IPv4.
+
+**IPv4 header (20 bytes, key fields):** version, header length, total length,
+**TTL** (hop limit), **protocol** (6 = TCP, 17 = UDP, 1 = ICMP), header checksum, and the
+**source and destination IP**.
+
+- **ICMP** — the helper protocol for errors and tests. **Ping** uses it (Echo request/reply);
+  **traceroute** uses TTL running out at each hop to map the route.
+- **Routing:**
+  - **Static** — set by hand. **Dynamic** — routers learn paths automatically.
+  - **Inside one network (IGP):** **RIP** (simple, hop count, max 15), **OSPF** (open, builds a
+    full map, picks lowest cost), **EIGRP** (Cisco).
+  - **Between networks (EGP):** **BGP** — the routing protocol of the whole internet, runs over
+    TCP port 179.
+- **NAT** — lets many private IPs share one public IP (what home routers do). Touches L3 (IPs)
+  and L4 (ports).
+- **IPsec** — encrypts/authenticates IP packets; the basis of many VPNs.
+- **Devices:** routers, layer-3 switches.
+- **Data unit:** Packet.
+
+## Layer 2: Data Link
+
+- **Job:** move **frames** between two devices **on the same local network**, using **MAC
+  addresses**. Switches live here.
+- **Two sublayers:** **LLC** (talks up to layer 3) and **MAC** (controls who gets to use the
+  wire/airwaves, and does the addressing).
+- **Does:** framing, MAC addressing, and **error detection** with an **FCS** (a CRC checksum in
+  the trailer — bad frames are dropped, not fixed).
+
+**MAC address:** 48-bit hardware address baked into the network card, e.g.
+`00:1A:2B:3C:4D:5E`. First half = the vendor (**OUI**), second half = the specific card.
+`FF:FF:FF:FF:FF:FF` means **broadcast** (everyone on the segment).
+
+**Ethernet frame (key fields):** destination MAC, source MAC, **EtherType** (e.g. `0x0800`
+IPv4, `0x0806` ARP, `0x86DD` IPv6), the payload (46–1500 bytes — **1500 is the MTU**), and the
+**FCS** error check at the end.
+
+- **ARP** — maps an IP address to a MAC address on the local network. "Who has 192.168.1.5?" →
+  the owner replies with its MAC, and I cache it.
+- **VLANs (802.1Q)** — slice one physical switch into separate virtual networks by adding a
+  4-byte tag to frames.
+- **STP (Spanning Tree, 802.1D)** — stops loops in networks with backup links by blocking
+  redundant paths.
+- **Getting on the wire:** **CSMA/CD** (old shared Ethernet — listen, send, back off if you
+  collide) and **CSMA/CA** (Wi-Fi — avoid collisions because radio can't detect them).
+- **Switches** learn which MAC is on which port (a **MAC/CAM table**) and forward frames only to
+  the right port. Each port is its own collision domain.
+- **Devices:** switches, bridges, NICs, wireless access points.
+- **Data unit:** Frame.
+
+## Layer 1: Physical
+
+- **Job:** send raw **bits** as actual signals over the medium — voltages on copper, light in
+  fibre, radio waves in the air.
+- **Does:** defines cables, connectors, pin layouts, voltage levels, frequencies, data rates,
+  and **encoding** (how a 1 or 0 becomes a signal — e.g. Manchester, 4B/5B, PAM-5).
+- **Media:**
+  - **Copper twisted pair** — Cat5e (1 Gbps), Cat6 (1 Gbps, 10 Gbps short runs), Cat6a (10 Gbps
+    full 100 m). Plugs into **RJ45**. Standard run ~100 m.
+  - **Fibre** — light, immune to interference, long distance. **Multi-mode** (short, cheaper)
+    vs **single-mode** (long haul). Connectors LC/SC.
+  - **Wireless** — radio on 2.4 / 5 / 6 GHz (Wi-Fi).
+- **Speed words:** **bandwidth** = the max a link *could* do; **throughput** = what I *actually*
+  get; **latency** = delay; **jitter** = how much the delay wobbles.
+- **Duplex:** **simplex** (one way), **half-duplex** (one way at a time, like a walkie-talkie),
+  **full-duplex** (both at once, modern Ethernet).
+- **Standards:** Ethernet PHYs like **10BASE-T, 100BASE-TX, 1000BASE-T, 10GBASE-T**; Wi-Fi
+  802.11 a/b/g/n/ac/ax.
+- **Devices:** hubs, repeaters, cables, modems, media converters, the physical part of a NIC.
+- **Data unit:** Bits.
+
+## Addressing: MAC vs IP vs port
+
+Three different addresses do three different jobs — don't mix them up:
+
+- **MAC address (Layer 2)** — fixed on the network card. Only works on the **local** link.
+- **IP address (Layer 3)** — logical address used to **route across** networks.
+- **Port number (Layer 4)** — picks **which program** on the machine.
+
+> Analogy: **IP** = the building's street address, **MAC** = which mailbox on the local floor,
+> **Port** = which person inside the office.
+
+## Network devices by layer
+
+| Device | Layer | What it does |
+|--------|-------|--------------|
+| Hub / repeater | 1 | Copies the signal to every port. No brains. |
+| NIC (network card) | 1–2 | Connects a device; holds the MAC address. |
+| Switch | 2 | Forwards frames by MAC; learns a MAC-to-port table. |
+| Access point | 2 | Bridges Wi-Fi devices onto the wired network. |
+| Router | 3 | Forwards packets between networks using IP. |
+| Layer-3 switch | 2 + 3 | Switching and routing in one box. |
+| Firewall | 3–4 | Filters by IP and port (next-gen ones go up to L7). |
+| Load balancer | 4 or 7 | Spreads traffic across servers. |
+| Proxy / WAF | 7 | Reads and filters application traffic. |
+
+## Protocols by layer (reference)
+
+| Layer | Protocols |
+|-------|-----------|
+| 7 Application | HTTP, HTTPS, DNS, SMTP, IMAP, POP3, FTP, SFTP, TFTP, SSH, Telnet, DHCP, SNMP, NTP, LDAP, RDP, SMB, NFS |
+| 6 Presentation | TLS/SSL, MIME, ASN.1; formats JPEG, PNG, MP3; encodings ASCII, UTF-8 |
+| 5 Session | Sockets, RPC, NetBIOS, PPTP, L2TP |
+| 4 Transport | TCP, UDP, QUIC, SCTP |
+| 3 Network | IP (v4/v6), ICMP, IPsec, OSPF, BGP, RIP, EIGRP |
+| 2 Data Link | Ethernet, Wi-Fi (802.11), PPP, ARP, STP, VLAN (802.1Q) |
+| 1 Physical | Ethernet PHY (BASE-T), DSL, USB, Bluetooth, 802.11 radio |
+
+(Some protocols don't sit cleanly on one layer — TLS, ARP, and MPLS are the usual arguments.)
+
+## Common port numbers
+
+| Port | Protocol | Transport | Use |
+|------|----------|-----------|-----|
+| 20 / 21 | FTP | TCP | File transfer (data / control) |
+| 22 | SSH / SFTP | TCP | Secure shell + file transfer |
+| 23 | Telnet | TCP | Remote login (plaintext) |
+| 25 / 587 | SMTP | TCP | Send email |
+| 53 | DNS | UDP + TCP | Name lookups |
+| 67 / 68 | DHCP | UDP | Auto IP assignment |
+| 69 | TFTP | UDP | Simple file transfer |
+| 80 | HTTP | TCP | Web |
+| 110 / 143 | POP3 / IMAP | TCP | Read email |
+| 123 | NTP | UDP | Time sync |
+| 161 / 162 | SNMP | UDP | Device monitoring |
+| 179 | BGP | TCP | Internet routing |
+| 389 / 636 | LDAP / LDAPS | TCP | Directory services |
+| 443 | HTTPS | TCP (UDP for HTTP/3) | Secure web |
+| 3389 | RDP | TCP | Remote desktop |
+
+## OSI vs TCP/IP
+
+TCP/IP is the model the internet actually runs on. It's the same idea with fewer layers — it
+just groups OSI's top three together and (in the 4-layer version) the bottom two:
+
+| OSI (7) | TCP/IP (4) |
+|---------|------------|
+| 7 · 6 · 5 (App, Pres, Session) | Application |
+| 4 Transport | Transport |
+| 3 Network | Internet |
+| 2 · 1 (Data Link, Physical) | Network Access (Link) |
+
+(Textbooks often use a 5-layer version that keeps Data Link and Physical separate.)
+
+## Why TCP/IP won (and OSI's limits)
+
+- TCP/IP was **already running** (on ARPANET, the early internet) and was **free**, bundled into
+  Unix. OSI's protocols showed up late, complex, and barely implemented.
+- TCP/IP grew from "rough consensus and running code"; OSI grew from slow committees.
+- **OSI's weak spots:** the Session and Presentation layers are thin and barely used in
+  practice; it was over-engineered; and several real protocols don't map neatly.
+- **So why still learn it?** Because it's the shared language. Engineers say "that's a layer 1
+  problem" (check the cable), "a layer 2 device" (switch), "a layer 7 attack" — OSI is the map
+  everyone reads from.
+
+## Troubleshooting by layer
+
+A handy habit: start at the bottom and work up.
+
+1. **L1 Physical** — is it plugged in? Cable good? Link light on?
+2. **L2 Data Link** — right VLAN? MAC/switch port okay? ARP resolving?
+3. **L3 Network** — can I `ping` the IP? Right subnet/gateway? Routing okay?
+4. **L4 Transport** — is the **port** open? Firewall blocking it?
+5. **L5–7** — is the app/service itself up? DNS resolving? Certificate valid?
+
+## Security by layer
+
+Most attacks live at one layer. Naming the layer points straight at the fix:
+
+| Layer | Common attacks | Defenses |
+|-------|----------------|----------|
+| 1 Physical | Cable taps, Wi-Fi jamming | Physical security, locked ports, encryption |
+| 2 Data Link | ARP spoofing, MAC flooding, VLAN hopping | DHCP snooping, dynamic ARP inspection, port security |
+| 3 Network | IP spoofing, ICMP/ping floods, Smurf | ACLs, firewalls, ingress filtering (BCP 38) |
+| 4 Transport | SYN flood, port scans, session hijack | SYN cookies, stateful firewall, rate limiting |
+| 5–7 | Phishing, SQL injection, XSS, DNS poisoning, TLS stripping | WAF, input validation, DNSSEC, HSTS, MFA |
+
+> Quick trick: ask "which layer is this attack at?" and the right device, protocol, and fix
+> usually fall straight out.
+
+## Glossary
+
+- **Bit** — a single 1 or 0. **Byte / octet** — 8 bits.
+- **Frame / Packet / Segment** — the data unit at layers 2 / 3 / 4.
+- **Header / Trailer** — control info added to the front / back of the data.
+- **Payload** — the actual data inside, minus the headers.
+- **FCS / CRC** — an error-check value; if it doesn't match, the frame is dropped.
+- **MTU** — biggest payload a link carries in one frame (Ethernet = 1500 bytes).
+- **MSS** — biggest payload TCP puts in one segment (usually 1460 bytes).
+- **Bandwidth** — max possible data rate. **Throughput** — actual data rate. **Latency** —
+  delay. **Jitter** — variation in delay.
+- **Unicast / Broadcast / Multicast** — to one / to everyone / to a group.
+- **Full / half duplex** — both directions at once / one direction at a time.
+- **Socket** — IP address + port together; one end of a connection.
+- **ARP** — finds the MAC for an IP on the local network.
+- **NAT** — many private IPs sharing one public IP.
