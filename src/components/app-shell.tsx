@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { NavCategory } from "@/lib/types";
 import { ThemeToggle } from "./theme-toggle";
+import { SearchBar } from "./search-bar";
 
 export function AppShell({
   tree,
@@ -22,14 +23,30 @@ export function AppShell({
 
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/65 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 lg:px-8">
-          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-4 lg:gap-4 lg:px-8">
+          <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-accent text-[13px] font-bold text-accent-foreground">
               L
             </span>
-            Lexicon
+            <span className="hidden sm:inline">Lexicon</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 justify-center">
+            <SearchBar tree={tree} />
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/graph"
+              aria-label="Knowledge map"
+              title="Knowledge map"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:bg-card hover:text-foreground"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="5" cy="6" r="2.5" />
+                <circle cx="19" cy="8" r="2.5" />
+                <circle cx="12" cy="18" r="2.5" />
+                <path d="M7.2 7 16.5 8.6M17.6 10.3 13 15.8M10.2 16.6 6 8.2" />
+              </svg>
+            </Link>
             <ThemeToggle />
             <button
               type="button"

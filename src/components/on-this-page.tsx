@@ -19,7 +19,7 @@ export function OnThisPage() {
   if (items.length < 4) return null;
 
   return (
-    <nav className="not-prose mb-7 rounded-xl border border-card-border bg-card/50 p-4">
+    <nav className="not-prose mb-7 rounded-xl border border-card-border bg-card/50 p-4 xl:hidden">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
         On this page
       </p>
