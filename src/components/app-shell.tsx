@@ -153,6 +153,15 @@ function SidebarNav({
           </ul>
         </div>
       ))}
+      <div className="border-t border-border pt-4">
+        <Link
+          href="/suggest"
+          onClick={onNavigate}
+          className="block rounded-md px-2 py-1.5 text-foreground/75 transition-colors hover:bg-card hover:text-foreground"
+        >
+          + Suggest a topic
+        </Link>
+      </div>
     </nav>
   );
 }
