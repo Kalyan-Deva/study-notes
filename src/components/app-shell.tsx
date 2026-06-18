@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import type { NavCategory } from "@/lib/types";
 import { ThemeToggle } from "./theme-toggle";
 import { SearchBar } from "./search-bar";
+import { AuthButton } from "./auth-button";
 
 export function AppShell({
   tree,
@@ -48,6 +49,7 @@ export function AppShell({
               </svg>
             </Link>
             <ThemeToggle />
+            <AuthButton />
             <button
               type="button"
               aria-label="Toggle topics"
