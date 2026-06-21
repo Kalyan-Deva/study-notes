@@ -35,7 +35,9 @@ export default async function PostPage({
   return (
     <article className="min-w-0">
       <header className="mb-5 border-b border-border pb-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-accent">Post</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+          {p.category || "Posts"}
+        </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">{p.title}</h1>
         <div className="mt-2 flex items-center gap-3 text-xs text-muted">
           <span>Updated {new Date(p.updated_at).toLocaleDateString()}</span>

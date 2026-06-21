@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PostComposer } from "@/components/post-composer";
 import { supabaseConfigured } from "@/lib/supabase/config";
+import { getNavTree } from "@/lib/content";
 
 export const metadata: Metadata = { title: "New post" };
 
@@ -12,5 +13,6 @@ export default function ComposePage() {
       </p>
     );
   }
-  return <PostComposer />;
+  const categories = getNavTree().map((g) => g.category);
+  return <PostComposer categories={categories} />;
 }

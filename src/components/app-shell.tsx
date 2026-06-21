@@ -154,7 +154,7 @@ function SidebarNav({
           </p>
           <ul className="space-y-0.5">
             {group.notes.map((note) => {
-              const href = `/notes/${note.slug}`;
+              const href = note.href ?? `/notes/${note.slug}`;
               const active = pathname === href;
               return (
                 <li key={note.slug}>

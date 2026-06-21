@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import type { NavCategory } from "@/lib/types";
 
-type Item = { slug: string; title: string; category: string; summary: string };
+type Item = { slug: string; title: string; category: string; summary: string; href: string };
 
 export function SearchBar({ tree }: { tree: NavCategory[] }) {
   const items = useMemo<Item[]>(
@@ -16,6 +16,7 @@ export function SearchBar({ tree }: { tree: NavCategory[] }) {
           title: n.title,
           category: g.category,
           summary: n.summary,
+          href: n.href ?? `/notes/${n.slug}`,
         })),
       ),
     [tree],
@@ -75,7 +76,7 @@ export function SearchBar({ tree }: { tree: NavCategory[] }) {
       setOpen(false);
       inputRef.current?.blur();
     } else if (e.key === "Enter" && results.length > 0) {
-      router.push(`/notes/${results[0].slug}`);
+      router.push(results[0].href);
     }
   }
 
@@ -112,9 +113,9 @@ export function SearchBar({ tree }: { tree: NavCategory[] }) {
           ) : (
             <ul className="max-h-80 overflow-y-auto py-1 text-sm">
               {results.map((it) => (
-                <li key={it.slug}>
+                <li key={it.href}>
                   <Link
-                    href={`/notes/${it.slug}`}
+                    href={it.href}
                     onClick={() => setOpen(false)}
                     className="flex items-baseline justify-between gap-3 px-4 py-2 transition-colors hover:bg-accent-soft"
                   >

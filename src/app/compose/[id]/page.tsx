@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/config";
 import { PostComposer } from "@/components/post-composer";
+import { getNavTree } from "@/lib/content";
 import type { Post } from "@/lib/supabase/types";
 
 export default async function EditPostPage({
@@ -22,5 +23,6 @@ export default async function EditPostPage({
   const { data: post } = await supabase.from("posts").select("*").eq("id", id).single();
   if (!post) notFound();
 
-  return <PostComposer post={post as Post} />;
+  const categories = getNavTree().map((g) => g.category);
+  return <PostComposer post={post as Post} categories={categories} />;
 }

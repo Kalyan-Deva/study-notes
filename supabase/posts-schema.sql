@@ -8,9 +8,13 @@ create table if not exists public.posts (
   id          uuid primary key default gen_random_uuid(),
   title       text not null default 'Untitled',
   body        text not null default '',  -- one continuous Markdown document
+  category    text not null default 'Posts',
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- Safe to re-run: adds the category column if you created the table earlier.
+alter table public.posts add column if not exists category text not null default 'Posts';
 
 create index if not exists posts_updated_idx on public.posts (updated_at desc);
 

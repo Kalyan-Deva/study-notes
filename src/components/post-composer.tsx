@@ -7,11 +7,19 @@ import { createSupabaseBrowser } from "@/lib/supabase/client";
 import { Markdown } from "@/components/markdown";
 import type { Post } from "@/lib/supabase/types";
 
-export function PostComposer({ post }: { post?: Post }) {
+export function PostComposer({
+  post,
+  categories = [],
+}: {
+  post?: Post;
+  categories?: string[];
+}) {
   const [title, setTitle] = useState(post?.title ?? "");
+  const [category, setCategory] = useState(post?.category ?? "");
   // One continuous Markdown document — every Ctrl+Enter appends to it.
   const [body, setBody] = useState(post?.body ?? "");
   const [draft, setDraft] = useState("");
+  const [preview, setPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -95,7 +103,11 @@ export function PostComposer({ post }: { post?: Post }) {
     const finalBody = pending ? (body ? `${body}\n\n${pending}` : pending) : body;
 
     const supabase = createSupabaseBrowser();
-    const payload = { title: title.trim() || "Untitled", body: finalBody };
+    const payload = {
+      title: title.trim() || "Untitled",
+      body: finalBody,
+      category: category.trim() || "Posts",
+    };
     const res = post
       ? await supabase.from("posts").update(payload).eq("id", post.id).select("id").single()
       : await supabase.from("posts").insert(payload).select("id").single();
@@ -154,6 +166,21 @@ export function PostComposer({ post }: { post?: Post }) {
           placeholder="Post title"
           className="min-w-0 flex-1 rounded-lg border border-border bg-card px-3 py-2 text-xl font-bold tracking-tight outline-none focus:border-accent"
         />
+        <input
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setDirty(true);
+          }}
+          list="post-categories"
+          placeholder="Category"
+          className="w-32 rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-accent"
+        />
+        <datalist id="post-categories">
+          {categories.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
         {dirty && (
           <span className="text-xs text-muted" title="Unsaved changes">
             ● Unsaved
@@ -237,8 +264,22 @@ export function PostComposer({ post }: { post?: Post }) {
               <option value="h3">Subheading</option>
               <option value="quote">Quote</option>
             </select>
+            <button
+              type="button"
+              onClick={() => setPreview((v) => !v)}
+              className={`${toolBtn} ml-auto ${preview ? "bg-background text-foreground" : ""}`}
+              title="Toggle live preview"
+              aria-pressed={preview}
+            >
+              {preview ? "Edit" : "Preview"}
+            </button>
           </div>
 
+          {preview ? (
+            <div className="max-h-72 min-h-[6rem] overflow-y-auto rounded-xl border border-card-border px-3 py-2">
+              <Markdown>{draft || "_Nothing to preview — start typing._"}</Markdown>
+            </div>
+          ) : (
           <textarea
             ref={taRef}
             value={draft}
@@ -248,6 +289,7 @@ export function PostComposer({ post }: { post?: Post }) {
             placeholder="Write a paragraph, or a few points…  (Ctrl+Enter to add it to the page)"
             className="max-h-72 min-h-[6rem] w-full resize-none rounded-xl bg-transparent px-3 py-2 text-[15px] leading-relaxed outline-none"
           />
+          )}
 
           <div className="flex items-center justify-between px-2 pb-1">
             <span className="text-[11px] text-muted">
