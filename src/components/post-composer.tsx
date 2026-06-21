@@ -20,17 +20,31 @@ export function PostComposer({
   const [body, setBody] = useState(post?.body ?? "");
   const [draft, setDraft] = useState("");
   const [preview, setPreview] = useState(false);
+  const [showTools, setShowTools] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
   const docEndRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     docEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [body]);
+
+  // Close the formatting menu when clicking outside it.
+  useEffect(() => {
+    if (!showTools) return;
+    function onDown(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowTools(false);
+      }
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [showTools]);
 
   function commitDraft() {
     const chunk = draft.trim();
@@ -42,9 +56,27 @@ export function PostComposer({
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    const mod = e.ctrlKey || e.metaKey;
+    if (!mod) return;
+    if (e.key === "Enter") {
       e.preventDefault();
       commitDraft();
+      return;
+    }
+    // Formatting shortcuts.
+    const k = e.key.toLowerCase();
+    if (k === "b") {
+      e.preventDefault();
+      wrapSelection("**");
+    } else if (k === "i") {
+      e.preventDefault();
+      wrapSelection("*");
+    } else if (k === "u") {
+      e.preventDefault();
+      wrapSelection("<u>", "</u>");
+    } else if (k === "e") {
+      e.preventDefault();
+      wrapSelection("`");
     }
   }
 
@@ -219,7 +251,7 @@ export function PostComposer({
       )}
 
       {/* Flowing document */}
-      <div className={`flex-1 ${canEdit ? "pb-52" : "pb-8"}`}>
+      <div className={`flex-1 ${canEdit ? "pb-36" : "pb-8"}`}>
         {body ? (
           <Markdown>{body}</Markdown>
         ) : (
@@ -234,60 +266,69 @@ export function PostComposer({
 
       {/* Composer (only when editing is unlocked) */}
       {canEdit && (
-        <div className="fixed bottom-4 left-1/2 z-30 w-[min(46rem,calc(100vw-2rem))] -translate-x-1/2">
-          <div className="glass-edge rounded-2xl border border-foreground/10 bg-card/80 p-2.5 shadow-xl backdrop-blur-2xl backdrop-saturate-150">
-            <div className="mb-2 flex flex-wrap items-center gap-1 px-1">
-              <button type="button" className={toolBtn} title="Bold (**)" onClick={() => wrapSelection("**")}>
-                <strong>B</strong>
-              </button>
-              <button type="button" className={toolBtn} title="Italic (*)" onClick={() => wrapSelection("*")}>
-                <em>I</em>
-              </button>
-              <button type="button" className={toolBtn} title="Inline code (`)" onClick={() => wrapSelection("`")}>
-                <code className="text-xs">{"</>"}</code>
-              </button>
-              <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
-              <button type="button" className={toolBtn} title="Bullet list" onClick={() => prefixLines(() => "- ")}>
-                • List
-              </button>
+        <div className="fixed bottom-4 left-1/2 z-30 w-[min(38rem,calc(100vw-2rem))] -translate-x-1/2">
+          <div className="glass-edge rounded-2xl border border-foreground/10 bg-card/80 p-2 shadow-xl backdrop-blur-2xl backdrop-saturate-150">
+            {/* Formatting tucked behind a kebab menu, top-right */}
+            <div ref={menuRef} className="relative mb-1 flex justify-end">
               <button
                 type="button"
+                onClick={() => setShowTools((v) => !v)}
                 className={toolBtn}
-                title="Numbered list"
-                onClick={() => prefixLines((i) => `${i + 1}. `)}
+                aria-label="Formatting options"
+                aria-expanded={showTools}
+                title="Formatting"
               >
-                1. List
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="12" cy="5" r="1.6" />
+                  <circle cx="12" cy="12" r="1.6" />
+                  <circle cx="12" cy="19" r="1.6" />
+                </svg>
               </button>
-              <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
-              <select
-                aria-label="Format style"
-                defaultValue=""
-                onChange={(e) => {
-                  applyFormat(e.target.value);
-                  e.target.value = "";
-                }}
-                className="h-8 rounded-md bg-transparent px-1 text-sm text-muted outline-none hover:text-foreground"
-              >
-                <option value="" disabled>
-                  Style…
-                </option>
-                <option value="h2">Heading</option>
-                <option value="h3">Subheading</option>
-                <option value="quote">Quote</option>
-              </select>
-              <button
-                type="button"
-                onClick={() => setPreview((v) => !v)}
-                className={`${toolBtn} ml-auto ${preview ? "bg-background text-foreground" : ""}`}
-                title="Toggle live preview"
-                aria-pressed={preview}
-              >
-                {preview ? "Edit" : "Preview"}
-              </button>
+
+              {showTools && (
+                <div className="absolute bottom-full right-0 z-20 mb-2 flex w-60 flex-wrap gap-1 rounded-xl border border-foreground/10 bg-card p-1.5 shadow-xl">
+                  <button type="button" className={toolBtn} title="Bold (Ctrl+B)" onClick={() => wrapSelection("**")}>
+                    <strong>B</strong>
+                  </button>
+                  <button type="button" className={toolBtn} title="Italic (Ctrl+I)" onClick={() => wrapSelection("*")}>
+                    <em>I</em>
+                  </button>
+                  <button type="button" className={toolBtn} title="Underline (Ctrl+U)" onClick={() => wrapSelection("<u>", "</u>")}>
+                    <span className="underline">U</span>
+                  </button>
+                  <button type="button" className={toolBtn} title="Inline code (Ctrl+E)" onClick={() => wrapSelection("`")}>
+                    <code className="text-xs">{"</>"}</code>
+                  </button>
+                  <button type="button" className={toolBtn} title="Bullet list" onClick={() => prefixLines(() => "- ")}>
+                    • List
+                  </button>
+                  <button type="button" className={toolBtn} title="Numbered list" onClick={() => prefixLines((i) => `${i + 1}. `)}>
+                    1. List
+                  </button>
+                  <button type="button" className={toolBtn} title="Heading" onClick={() => applyFormat("h2")}>
+                    H2
+                  </button>
+                  <button type="button" className={toolBtn} title="Subheading" onClick={() => applyFormat("h3")}>
+                    H3
+                  </button>
+                  <button type="button" className={toolBtn} title="Quote" onClick={() => applyFormat("quote")}>
+                    ❝
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreview((v) => !v)}
+                    className={`${toolBtn} ${preview ? "bg-background text-foreground" : ""}`}
+                    title="Toggle live preview"
+                    aria-pressed={preview}
+                  >
+                    {preview ? "Edit" : "Preview"}
+                  </button>
+                </div>
+              )}
             </div>
 
             {preview ? (
-              <div className="max-h-72 min-h-[6rem] overflow-y-auto rounded-xl border border-card-border px-3 py-2">
+              <div className="max-h-48 min-h-[2.5rem] overflow-y-auto rounded-xl border border-card-border px-3 py-2">
                 <Markdown>{draft || "_Nothing to preview — start typing._"}</Markdown>
               </div>
             ) : (
@@ -296,9 +337,9 @@ export function PostComposer({
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={onKeyDown}
-                rows={4}
-                placeholder="Write a paragraph, or a few points…  (Ctrl+Enter to add it to the page)"
-                className="max-h-72 min-h-[6rem] w-full resize-none rounded-xl bg-transparent px-3 py-2 text-[15px] leading-relaxed outline-none"
+                rows={2}
+                placeholder="Write…  (Ctrl+Enter to add)"
+                className="max-h-40 min-h-[2.5rem] w-full resize-none rounded-xl bg-transparent px-3 py-1.5 text-sm leading-relaxed outline-none"
               />
             )}
 
