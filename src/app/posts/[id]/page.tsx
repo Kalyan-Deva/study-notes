@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/config";
-import { getEditSession } from "@/lib/edit-auth";
 import { Markdown } from "@/components/markdown";
 import type { Post } from "@/lib/supabase/types";
 
@@ -32,7 +31,6 @@ export default async function PostPage({
   if (!post) notFound();
 
   const p = post as Post;
-  const { canEdit } = await getEditSession();
 
   return (
     <article className="min-w-0">
@@ -43,11 +41,9 @@ export default async function PostPage({
         <h1 className="mt-1 text-2xl font-bold tracking-tight">{p.title}</h1>
         <div className="mt-2 flex items-center gap-3 text-xs text-muted">
           <span>Updated {new Date(p.updated_at).toLocaleDateString()}</span>
-          {canEdit && (
-            <Link href={`/compose/${p.id}`} className="text-accent hover:underline">
-              Edit
-            </Link>
-          )}
+          <Link href={`/compose/${p.id}`} className="text-accent hover:underline">
+            Edit
+          </Link>
         </div>
       </header>
       <Markdown>{p.body}</Markdown>

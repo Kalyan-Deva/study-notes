@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { getEditSession } from "@/lib/edit-auth";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
-// Create a post. Requires a valid edit token.
+// Create a post. Token gate temporarily removed for Posts — to re-lock, restore
+// the getEditSession()/canEdit check (still used by the journal routes).
 export async function POST(req: Request) {
-  const session = await getEditSession();
-  if (!session.canEdit) {
-    return NextResponse.json({ error: "Editing requires a valid token." }, { status: 401 });
-  }
-
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Bad request." }, { status: 400 });
 

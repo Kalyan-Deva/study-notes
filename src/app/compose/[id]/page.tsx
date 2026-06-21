@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/config";
-import { getEditSession } from "@/lib/edit-auth";
 import { PostComposer } from "@/components/post-composer";
 import { getNavTree } from "@/lib/content";
 import type { Post } from "@/lib/supabase/types";
@@ -25,6 +24,5 @@ export default async function EditPostPage({
   if (!post) notFound();
 
   const categories = getNavTree().map((g) => g.category);
-  const { canEdit } = await getEditSession();
-  return <PostComposer post={post as Post} categories={categories} canEdit={canEdit} />;
+  return <PostComposer post={post as Post} categories={categories} canEdit />;
 }
