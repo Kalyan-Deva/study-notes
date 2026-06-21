@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
 
-// Login only — public sign-up is closed while Lexicon is being built.
-// (To re-enable later, restore the sign-up toggle + supabase.auth.signUp.)
+// Admin login only — there are no public accounts. Signing in lets the admin
+// reach /admin to approve edit-token requests.
 export function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +24,7 @@ export function AuthForm() {
       setMsg(error.message);
       return;
     }
-    router.push("/me");
+    router.push("/admin");
     router.refresh();
   }
 
@@ -55,7 +55,7 @@ export function AuthForm() {
       </button>
       {msg && <p className="text-center text-sm text-accent">{msg}</p>}
       <p className="text-center text-xs text-muted">
-        Sign-ups are closed while Lexicon is being built.
+        Admin access only — there are no public accounts.
       </p>
     </form>
   );

@@ -1,12 +1,3 @@
-export type UserNote = {
-  id: string;
-  user_id: string;
-  title: string;
-  body: string;
-  created_at: string;
-  updated_at: string;
-};
-
 // One chat-style entry within a Journal note. `md` is raw Markdown.
 export type JournalEntry = {
   id: string;

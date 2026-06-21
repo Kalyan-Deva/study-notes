@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppShell } from "@/components/app-shell";
 import { getCombinedNavTree } from "@/lib/nav";
+import { getEditSession } from "@/lib/edit-auth";
+import { getAdminUser } from "@/lib/admin-auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +31,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const tree = await getCombinedNavTree();
+  const { canEdit } = await getEditSession();
+  const isAdmin = !!(await getAdminUser());
 
   return (
     <html
@@ -43,7 +47,9 @@ export default async function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <AppShell tree={tree}>{children}</AppShell>
+          <AppShell tree={tree} canEdit={canEdit} isAdmin={isAdmin}>
+            {children}
+          </AppShell>
         </ThemeProvider>
       </body>
     </html>

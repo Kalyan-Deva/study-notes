@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/config";
+import { getEditSession } from "@/lib/edit-auth";
 import type { JournalEntry } from "@/lib/supabase/types";
 
 export const metadata: Metadata = { title: "Journal" };
 
-// These notes are public/open, so unlike /me we never need a logged-in user.
+// These notes are public to read; creating one needs a valid edit token.
 export default async function JournalPage() {
   if (!supabaseConfigured) return <NotConfigured />;
 
+  const { canEdit } = await getEditSession();
   const supabase = await createSupabaseServer();
   const { data: notes } = await supabase
     .from("journal_notes")
@@ -25,12 +27,14 @@ export default async function JournalPage() {
             Open, shared notes — anyone can read and add to these.
           </p>
         </div>
-        <Link
-          href="/journal/new"
-          className="shrink-0 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground"
-        >
-          + New note
-        </Link>
+        {canEdit && (
+          <Link
+            href="/journal/new"
+            className="shrink-0 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground"
+          >
+            + New note
+          </Link>
+        )}
       </header>
 
       {!notes || notes.length === 0 ? (

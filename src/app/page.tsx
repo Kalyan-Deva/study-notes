@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getCombinedNavTree } from "@/lib/nav";
+import { getEditSession } from "@/lib/edit-auth";
 
 export default async function Home() {
   const tree = await getCombinedNavTree();
   const total = tree.reduce((n, g) => n + g.notes.length, 0);
+  const { canEdit } = await getEditSession();
 
   return (
     <div>
@@ -18,9 +20,11 @@ export default async function Home() {
             {total} {total === 1 ? "note" : "notes"} across {tree.length}{" "}
             {tree.length === 1 ? "category" : "categories"}.
           </p>
-          <Link href="/compose" className="text-sm font-medium text-accent hover:underline">
-            + New post
-          </Link>
+          {canEdit && (
+            <Link href="/compose" className="text-sm font-medium text-accent hover:underline">
+              + New post
+            </Link>
+          )}
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/config";
+import { getEditSession } from "@/lib/edit-auth";
 import { JournalComposer } from "@/components/journal-composer";
 import type { JournalNote } from "@/lib/supabase/types";
 
@@ -24,8 +25,8 @@ export default async function JournalNotePage({
     .select("*")
     .eq("id", id)
     .single();
-
   if (!note) notFound();
 
-  return <JournalComposer note={note as JournalNote} />;
+  const { canEdit } = await getEditSession();
+  return <JournalComposer note={note as JournalNote} canEdit={canEdit} />;
 }
