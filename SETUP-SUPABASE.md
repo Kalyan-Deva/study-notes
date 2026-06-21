@@ -14,6 +14,8 @@ free Supabase project. ~5 minutes:
 3. For the public **Journal** feature, run [`supabase/journal-schema.sql`](supabase/journal-schema.sql)
    too. (This makes the open `journal_notes` table — shared notes anyone can read and edit. The
    file has a commented block for later locking edits behind sign-in.)
+4. For the public **Posts** feature (composer notes that show on the home page), run
+   [`supabase/posts-schema.sql`](supabase/posts-schema.sql) too. (Open `posts` table, same pattern.)
 
 ## 3. Get your keys
 1. **Project Settings → API**.

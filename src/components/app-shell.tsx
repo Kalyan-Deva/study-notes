@@ -36,6 +36,17 @@ export function AppShell({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Link
+              href="/compose"
+              aria-label="Write a post"
+              title="Write a post"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:bg-card hover:text-foreground"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
+              </svg>
+            </Link>
+            <Link
               href="/journal"
               aria-label="Journal"
               title="Journal"

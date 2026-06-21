@@ -21,3 +21,13 @@ export type JournalNote = {
   created_at: string;
   updated_at: string;
 };
+
+// A public, open Post: one continuous Markdown document shown on the home page
+// alongside the curated topics.
+export type Post = {
+  id: string;
+  title: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+};
