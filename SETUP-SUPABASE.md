@@ -11,6 +11,9 @@ free Supabase project. ~5 minutes:
 1. In the project: **SQL Editor → New query**.
 2. Paste the contents of [`supabase/schema.sql`](supabase/schema.sql) and click **Run**.
    (This makes the `notes` table and the security rules so each user only sees their own.)
+3. For the public **Journal** feature, run [`supabase/journal-schema.sql`](supabase/journal-schema.sql)
+   too. (This makes the open `journal_notes` table — shared notes anyone can read and edit. The
+   file has a commented block for later locking edits behind sign-in.)
 
 ## 3. Get your keys
 1. **Project Settings → API**.

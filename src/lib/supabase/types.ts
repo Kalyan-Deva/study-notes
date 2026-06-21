@@ -6,3 +6,18 @@ export type UserNote = {
   created_at: string;
   updated_at: string;
 };
+
+// One chat-style entry within a Journal note. `md` is raw Markdown.
+export type JournalEntry = {
+  id: string;
+  md: string;
+};
+
+// A public, open Journal note: an ordered stream of entries.
+export type JournalNote = {
+  id: string;
+  title: string;
+  entries: JournalEntry[];
+  created_at: string;
+  updated_at: string;
+};
