@@ -180,6 +180,14 @@ body {
   border-radius: 0.2rem;
 }
 
+/* Session highlighter marks (user-selected highlights) */
+mark.lex-hl {
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 0.5px;
+  cursor: pointer;
+}
+
 /* Thin, themed scrollbar for the sidebar */
 .scroll-thin {
   scrollbar-width: thin;

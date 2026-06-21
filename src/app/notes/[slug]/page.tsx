@@ -22,6 +22,7 @@ import {
 } from "@/components/figures";
 import { OnThisPage } from "@/components/on-this-page";
 import { ScrollSpyToc } from "@/components/scroll-spy-toc";
+import { Highlighter } from "@/components/highlighter";
 
 const mdxComponents = {
   LayerStack,
@@ -158,6 +159,8 @@ export default async function NotePage({
       <aside className="hidden xl:block">
         <ScrollSpyToc />
       </aside>
+
+      <Highlighter />
     </div>
   );
 }
