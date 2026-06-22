@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Ensure the MDX notes in /content ship with the serverless function that
+  // powers the public /api/feed route (it reads them via fs at runtime).
+  outputFileTracingIncludes: {
+    "/api/feed": ["./content/**/*"],
+  },
 };
 
 export default nextConfig;
