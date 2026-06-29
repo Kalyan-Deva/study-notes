@@ -14,6 +14,8 @@ In the project: **SQL Editor → New query**, then run each of these (paste → 
 2. [`supabase/posts-schema.sql`](supabase/posts-schema.sql) — the public `posts` table (home-page notes).
 3. [`supabase/edit-tokens-schema.sql`](supabase/edit-tokens-schema.sql) — the private `edit_tokens`
    table; **also locks Journal/Posts to read-only** so edits must go through a valid token.
+4. [`supabase/storage.sql`](supabase/storage.sql) — a public `media` bucket for images embedded in
+   posts (the composer's image upload). Uploads go through `/api/upload` via the service-role key.
 
 (`supabase/schema.sql` is legacy — it created a per-user `notes` table for the old personal-notes
 feature, which has been removed. You can skip it.)

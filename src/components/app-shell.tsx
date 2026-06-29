@@ -36,7 +36,7 @@ export function AppShell({
             <span className="hidden sm:inline">Lexicon</span>
           </Link>
           <div className="flex min-w-0 flex-1 justify-center">
-            <SearchBar tree={tree} />
+            <SearchBar />
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Link

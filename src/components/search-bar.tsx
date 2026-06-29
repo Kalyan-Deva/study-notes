@@ -3,25 +3,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import type { NavCategory } from "@/lib/types";
 
-type Item = { slug: string; title: string; category: string; summary: string; href: string };
+type SearchDoc = { title: string; category: string; href: string; body: string };
 
-export function SearchBar({ tree }: { tree: NavCategory[] }) {
-  const items = useMemo<Item[]>(
-    () =>
-      tree.flatMap((g) =>
-        g.notes.map((n) => ({
-          slug: n.slug,
-          title: n.title,
-          category: g.category,
-          summary: n.summary,
-          href: n.href ?? `/notes/${n.slug}`,
-        })),
-      ),
-    [tree],
-  );
+type Result = SearchDoc & { snippet: string | null };
 
+function makeSnippet(body: string, term: string): string | null {
+  const i = body.toLowerCase().indexOf(term);
+  if (i === -1) return null;
+  const start = Math.max(0, i - 40);
+  const end = Math.min(body.length, i + term.length + 70);
+  return (start > 0 ? "…" : "") + body.slice(start, end).trim() + (end < body.length ? "…" : "");
+}
+
+export function SearchBar() {
+  const [docs, setDocs] = useState<SearchDoc[] | null>(null);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -29,46 +25,60 @@ export function SearchBar({ tree }: { tree: NavCategory[] }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const results = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    if (!term) return [];
-    return items
-      .filter(
-        (it) =>
-          it.title.toLowerCase().includes(term) ||
-          it.category.toLowerCase().includes(term) ||
-          it.summary.toLowerCase().includes(term),
-      )
-      .slice(0, 8);
-  }, [q, items]);
+  // Load the full-text index once, on first focus.
+  async function ensureIndex() {
+    if (docs) return;
+    try {
+      const res = await fetch("/api/search-index");
+      if (res.ok) setDocs(await res.json());
+      else setDocs([]);
+    } catch {
+      setDocs([]);
+    }
+  }
 
-  // Close + clear on navigation.
+  const results = useMemo<Result[]>(() => {
+    const term = q.trim().toLowerCase();
+    if (!term || !docs) return [];
+    return docs
+      .filter(
+        (d) =>
+          d.title.toLowerCase().includes(term) ||
+          d.category.toLowerCase().includes(term) ||
+          d.body.toLowerCase().includes(term),
+      )
+      .slice(0, 8)
+      .map((d) => ({
+        ...d,
+        // Show a body snippet only when the match isn't already in the title.
+        snippet: d.title.toLowerCase().includes(term) ? null : makeSnippet(d.body, term),
+      }));
+  }, [q, docs]);
+
   useEffect(() => {
     setOpen(false);
     setQ("");
   }, [pathname]);
 
-  // Close on click outside.
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  // Cmd/Ctrl+K to focus.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        ensureIndex();
         inputRef.current?.focus();
       }
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onInputKey(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -95,7 +105,10 @@ export function SearchBar({ tree }: { tree: NavCategory[] }) {
             setQ(e.target.value);
             setOpen(true);
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            ensureIndex();
+            setOpen(true);
+          }}
           onKeyDown={onInputKey}
           placeholder="Search notes…"
           aria-label="Search notes"
@@ -109,7 +122,9 @@ export function SearchBar({ tree }: { tree: NavCategory[] }) {
       {open && q.trim() && (
         <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-xl border border-foreground/10 bg-card/80 shadow-xl backdrop-blur-2xl">
           {results.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-muted">No matches for “{q.trim()}”.</p>
+            <p className="px-4 py-3 text-sm text-muted">
+              {docs ? `No matches for “${q.trim()}”.` : "Loading…"}
+            </p>
           ) : (
             <ul className="max-h-80 overflow-y-auto py-1 text-sm">
               {results.map((it) => (
@@ -117,10 +132,15 @@ export function SearchBar({ tree }: { tree: NavCategory[] }) {
                   <Link
                     href={it.href}
                     onClick={() => setOpen(false)}
-                    className="flex items-baseline justify-between gap-3 px-4 py-2 transition-colors hover:bg-accent-soft"
+                    className="block px-4 py-2 transition-colors hover:bg-accent-soft"
                   >
-                    <span className="font-medium text-foreground">{it.title}</span>
-                    <span className="shrink-0 text-xs text-muted">{it.category}</span>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="font-medium text-foreground">{it.title}</span>
+                      <span className="shrink-0 text-xs text-muted">{it.category}</span>
+                    </div>
+                    {it.snippet && (
+                      <p className="mt-0.5 line-clamp-1 text-xs text-muted">{it.snippet}</p>
+                    )}
                   </Link>
                 </li>
               ))}

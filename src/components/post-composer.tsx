@@ -21,6 +21,7 @@ export function PostComposer({
   const [draft, setDraft] = useState("");
   const [preview, setPreview] = useState(false);
   const [showTools, setShowTools] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export function PostComposer({
   const taRef = useRef<HTMLTextAreaElement>(null);
   const docEndRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -121,6 +123,52 @@ export function PostComposer({
     if (value === "h2") prefixLines(() => "## ");
     else if (value === "h3") prefixLines(() => "### ");
     else if (value === "quote") prefixLines(() => "> ");
+  }
+
+  // Insert text at the caret (used for embedding images between the lines).
+  function insertAtCursor(text: string) {
+    const ta = taRef.current;
+    if (!ta) {
+      setDraft((d) => d + text);
+      setDirty(true);
+      return;
+    }
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    setDraft(draft.slice(0, start) + text + draft.slice(end));
+    setDirty(true);
+    requestAnimationFrame(() => {
+      ta.focus();
+      const pos = start + text.length;
+      ta.selectionStart = ta.selectionEnd = pos;
+    });
+  }
+
+  async function uploadImage(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    setUploading(true);
+    setErr(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const json = await res.json().catch(() => ({}));
+    setUploading(false);
+    if (!res.ok) {
+      setErr(json.error ?? "Upload failed.");
+      return;
+    }
+    const alt = file.name.replace(/\.[^.]+$/, "");
+    insertAtCursor(`\n![${alt}](${json.url})\n`);
+  }
+
+  // Paste an image straight from the clipboard.
+  function onPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const item = Array.from(e.clipboardData.items).find((i) => i.type.startsWith("image/"));
+    const file = item?.getAsFile();
+    if (file) {
+      e.preventDefault();
+      uploadImage(file);
+    }
   }
 
   async function save() {
@@ -299,6 +347,15 @@ export function PostComposer({
                   <button type="button" className={toolBtn} title="Inline code (Ctrl+E)" onClick={() => wrapSelection("`")}>
                     <code className="text-xs">{"</>"}</code>
                   </button>
+                  <button
+                    type="button"
+                    className={toolBtn}
+                    title="Insert image (or paste one)"
+                    disabled={uploading}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploading ? "…" : "Img"}
+                  </button>
                   <button type="button" className={toolBtn} title="Bullet list" onClick={() => prefixLines(() => "- ")}>
                     • List
                   </button>
@@ -327,6 +384,18 @@ export function PostComposer({
               )}
             </div>
 
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadImage(f);
+                e.target.value = "";
+              }}
+            />
+
             {preview ? (
               <div className="max-h-48 min-h-[2.5rem] overflow-y-auto rounded-xl border border-card-border px-3 py-2">
                 <Markdown>{draft || "_Nothing to preview — start typing._"}</Markdown>
@@ -337,6 +406,7 @@ export function PostComposer({
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={onKeyDown}
+                onPaste={onPaste}
                 rows={2}
                 placeholder="Write…  (Ctrl+Enter to add)"
                 className="max-h-40 min-h-[2.5rem] w-full resize-none rounded-xl bg-transparent px-3 py-1.5 text-sm leading-relaxed outline-none"
