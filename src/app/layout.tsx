@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppShell } from "@/components/app-shell";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 import { getCombinedNavTree } from "@/lib/nav";
 import { getEditSession } from "@/lib/edit-auth";
 import { getAdminUser } from "@/lib/admin-auth";
@@ -40,6 +41,15 @@ export const metadata: Metadata = {
   alternates: {
     types: { "application/rss+xml": `${SITE_URL}/feed.xml` },
   },
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#191816",
 };
 
 export default async function RootLayout({
@@ -67,6 +77,7 @@ export default async function RootLayout({
           <AppShell tree={tree} canEdit={canEdit} isAdmin={isAdmin}>
             {children}
           </AppShell>
+          <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
     </html>
