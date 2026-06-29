@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/config";
 import { Markdown } from "@/components/markdown";
+import { OnThisPage } from "@/components/on-this-page";
+import { ScrollSpyToc } from "@/components/scroll-spy-toc";
 import type { Post } from "@/lib/supabase/types";
 
 export async function generateMetadata({
@@ -31,22 +33,33 @@ export default async function PostPage({
   if (!post) notFound();
 
   const p = post as Post;
+  const words = p.body.trim() ? p.body.trim().split(/\s+/).length : 0;
+  const minutes = Math.max(1, Math.round(words / 200));
 
   return (
-    <article className="min-w-0">
-      <header className="mb-5 border-b border-border pb-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-accent">
-          {p.category || "Posts"}
-        </p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight">{p.title}</h1>
-        <div className="mt-2 flex items-center gap-3 text-xs text-muted">
-          <span>Updated {new Date(p.updated_at).toLocaleDateString()}</span>
-          <Link href={`/compose/${p.id}`} className="text-accent hover:underline">
-            Edit
-          </Link>
-        </div>
-      </header>
-      <Markdown>{p.body}</Markdown>
-    </article>
+    <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_12rem] xl:gap-10">
+      <article className="min-w-0">
+        <header className="mb-5 border-b border-border pb-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+            {p.category || "Posts"}
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight">{p.title}</h1>
+          <div className="mt-2 flex items-center gap-3 text-xs text-muted">
+            <span>Updated {new Date(p.updated_at).toLocaleDateString()}</span>
+            <span aria-hidden="true">·</span>
+            <span>{minutes} min read</span>
+            <Link href={`/compose/${p.id}`} className="text-accent hover:underline">
+              Edit
+            </Link>
+          </div>
+        </header>
+        <OnThisPage />
+        <Markdown>{p.body}</Markdown>
+      </article>
+
+      <aside className="hidden xl:block">
+        <ScrollSpyToc />
+      </aside>
+    </div>
   );
 }
