@@ -16,8 +16,21 @@ export async function generateMetadata({
   if (!supabaseConfigured) return {};
   const { id } = await params;
   const supabase = await createSupabaseServer();
-  const { data } = await supabase.from("posts").select("title").eq("id", id).single();
-  return { title: data?.title ?? "Post" };
+  const { data } = await supabase.from("posts").select("title,body").eq("id", id).single();
+  if (!data) return { title: "Post" };
+
+  const description = data.body
+    .replace(/[#>*_`~|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+
+  return {
+    title: data.title,
+    description,
+    openGraph: { type: "article", title: data.title, description },
+    twitter: { card: "summary_large_image", title: data.title, description },
+  };
 }
 
 export default async function PostPage({

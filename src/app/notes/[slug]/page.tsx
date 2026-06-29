@@ -55,7 +55,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const note = getNoteBySlug(slug);
   if (!note) return {};
-  return { title: note.meta.title, description: note.meta.summary };
+  const { title, summary } = note.meta;
+  return {
+    title,
+    description: summary,
+    openGraph: { type: "article", title, description: summary },
+    twitter: { card: "summary_large_image", title, description: summary },
+  };
 }
 
 const prettyCodeOptions: PrettyCodeOptions = {
