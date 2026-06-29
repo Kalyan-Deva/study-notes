@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { getNavTree } from "./content";
 import { createSupabaseServer } from "./supabase/server";
 import { supabaseConfigured } from "./supabase/config";
@@ -23,7 +24,7 @@ export function postSummary(body: string): string {
  * the same tree as topics (which default to /notes/<slug>). Falls back to topics
  * only when Supabase isn't configured.
  */
-export async function getCombinedNavTree(): Promise<NavCategory[]> {
+export const getCombinedNavTree = cache(async (): Promise<NavCategory[]> => {
   const tree = getNavTree();
   if (!supabaseConfigured) return tree;
 
@@ -65,4 +66,4 @@ export async function getCombinedNavTree(): Promise<NavCategory[]> {
       const bo = Math.min(...b.notes.map((n) => n.order));
       return ao - bo || a.category.localeCompare(b.category);
     });
-}
+});

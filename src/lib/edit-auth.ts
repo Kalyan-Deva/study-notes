@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { createHash, randomBytes } from "node:crypto";
 import { createSupabaseAdmin } from "./supabase/admin";
@@ -43,10 +44,11 @@ export async function validateToken(rawToken: string): Promise<EditSession> {
   return { canEdit: true, email: data.email, expiresAt: data.expires_at };
 }
 
-/** Current edit session from the request cookie (server components & routes). */
-export async function getEditSession(): Promise<EditSession> {
+/** Current edit session from the request cookie (server components & routes).
+ *  cache()d so repeated calls within one request (layout + page) hit the DB once. */
+export const getEditSession = cache(async (): Promise<EditSession> => {
   if (!serviceRoleConfigured) return NONE;
   const raw = (await cookies()).get(EDIT_COOKIE)?.value;
   if (!raw) return NONE;
   return validateToken(raw);
-}
+});
