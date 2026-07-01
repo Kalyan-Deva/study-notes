@@ -20,7 +20,12 @@ export async function generateMetadata({
   if (!supabaseConfigured) return {};
   const { id } = await params;
   const supabase = await createSupabaseServer();
-  const { data } = await supabase.from("posts").select("title,body").eq("id", id).single();
+  const { data } = await supabase
+    .from("posts")
+    .select("title,body")
+    .eq("id", id)
+    .eq("status", "published")
+    .single();
   if (!data) return { title: "Post" };
 
   const description = data.body
@@ -46,7 +51,12 @@ export default async function PostPage({
 
   const { id } = await params;
   const supabase = await createSupabaseServer();
-  const { data: post } = await supabase.from("posts").select("*").eq("id", id).single();
+  const { data: post } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "published")
+    .single();
   if (!post) notFound();
 
   const p = post as Post;

@@ -69,7 +69,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   const { id } = await params;
   const supabase = await createSupabaseServer();
-  const { data } = await supabase.from("posts").select("*").eq("id", id).single();
+  const { data } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "published")
+    .single();
   if (!data) return new NextResponse("Not found", { status: 404 });
 
   const p = data as Post;

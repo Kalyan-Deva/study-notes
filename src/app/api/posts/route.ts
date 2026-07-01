@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
+import { getAdminUser } from "@/lib/admin-auth";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
-// Create a post. Token gate temporarily removed for Posts — to re-lock, restore
-// the getEditSession()/canEdit check (still used by the journal routes).
+// Create a post directly (published). Admin-only — the public writes via
+// /api/posts/submit, which goes through the moderation queue.
 export async function POST(req: Request) {
+  const adminUser = await getAdminUser();
+  if (!adminUser) return NextResponse.json({ error: "Not authorized." }, { status: 403 });
+
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Bad request." }, { status: 400 });
 
@@ -14,6 +18,7 @@ export async function POST(req: Request) {
       title: String(body.title ?? "").trim() || "Untitled",
       body: String(body.body ?? ""),
       category: String(body.category ?? "").trim() || "Posts",
+      status: "published",
     })
     .select("id")
     .single();

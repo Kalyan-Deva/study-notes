@@ -28,6 +28,7 @@ export async function GET() {
     const { data } = await supabase
       .from("posts")
       .select("id,title,body,updated_at")
+      .eq("status", "published")
       .order("updated_at", { ascending: false })
       .limit(50);
     posts = data ?? [];

@@ -34,8 +34,8 @@ export default async function Home() {
             {total} {total === 1 ? "note" : "notes"} across {tree.length}{" "}
             {tree.length === 1 ? "category" : "categories"}.
           </p>
-          <Link href="/compose" className="text-sm font-medium text-accent hover:underline">
-            + New post
+          <Link href="/submit" className="text-sm font-medium text-accent hover:underline">
+            + Submit a post
           </Link>
         </div>
       </section>

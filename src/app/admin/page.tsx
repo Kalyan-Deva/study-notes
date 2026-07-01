@@ -6,6 +6,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { serviceRoleConfigured, ADMIN_EMAIL } from "@/lib/supabase/config";
 import { AdminRequests, type PendingRequest } from "@/components/admin-requests";
 import { AdminTokens, type ActiveToken } from "@/components/admin-tokens";
+import { AdminPosts, type Submission } from "@/components/admin-posts";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -36,8 +37,16 @@ export default async function AdminPage() {
     .gt("expires_at", new Date().toISOString())
     .order("expires_at", { ascending: true });
 
+  const { data: submissions } = await supabase
+    .from("posts")
+    .select("id,title,category,submitter_email,body,created_at")
+    .eq("status", "pending")
+    .eq("email_confirmed", true)
+    .order("created_at", { ascending: false });
+
   const requests = (pending ?? []) as PendingRequest[];
   const tokens = (active ?? []) as ActiveToken[];
+  const posts = (submissions ?? []) as Submission[];
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -53,7 +62,14 @@ export default async function AdminPage() {
 
       <section className="mb-10">
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">
-          Pending requests{requests.length > 0 && ` (${requests.length})`}
+          Post submissions{posts.length > 0 && ` (${posts.length})`}
+        </h2>
+        <AdminPosts posts={posts} />
+      </section>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">
+          Pending token requests{requests.length > 0 && ` (${requests.length})`}
         </h2>
         <AdminRequests requests={requests} />
       </section>

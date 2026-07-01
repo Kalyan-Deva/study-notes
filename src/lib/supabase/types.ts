@@ -20,6 +20,16 @@ export type Post = {
   title: string;
   body: string;
   category: string;
+  status: string; // 'published' | 'pending' | 'rejected'
   created_at: string;
   updated_at: string;
+};
+
+// A public submission awaiting review (admin queue).
+export type PendingPost = {
+  id: string;
+  title: string;
+  category: string;
+  submitter_email: string | null;
+  created_at: string;
 };

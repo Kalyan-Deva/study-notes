@@ -41,7 +41,10 @@ export async function getSearchIndex(): Promise<SearchDoc[]> {
   if (supabaseConfigured) {
     const supabase = await createSupabaseServer();
 
-    const { data: posts } = await supabase.from("posts").select("id,title,body,category");
+    const { data: posts } = await supabase
+      .from("posts")
+      .select("id,title,body,category")
+      .eq("status", "published");
     for (const p of posts ?? []) {
       docs.push({
         title: p.title,

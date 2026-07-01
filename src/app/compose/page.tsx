@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { PostComposer } from "@/components/post-composer";
 import { supabaseConfigured } from "@/lib/supabase/config";
+import { getAdminUser } from "@/lib/admin-auth";
 import { getNavTree } from "@/lib/content";
 
 export const metadata: Metadata = { title: "New post" };
 
-// Posts are open to edit for now (no token required); re-add a getEditSession
-// gate here to lock it later.
+// Admin-only direct publishing. The public writes via /submit (moderated).
 export default async function ComposePage() {
   if (!supabaseConfigured) {
     return (
@@ -15,6 +16,9 @@ export default async function ComposePage() {
       </p>
     );
   }
+  const admin = await getAdminUser();
+  if (!admin) redirect("/submit");
+
   const categories = getNavTree().map((g) => g.category);
   return <PostComposer categories={categories} canEdit />;
 }

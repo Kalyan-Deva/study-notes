@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { supabaseConfigured } from "@/lib/supabase/config";
+import { getAdminUser } from "@/lib/admin-auth";
 import { PostComposer } from "@/components/post-composer";
 import { getNavTree } from "@/lib/content";
 import type { Post } from "@/lib/supabase/types";
@@ -17,6 +18,9 @@ export default async function EditPostPage({
       </p>
     );
   }
+
+  const admin = await getAdminUser();
+  if (!admin) redirect("/submit");
 
   const { id } = await params;
   const supabase = await createSupabaseServer();

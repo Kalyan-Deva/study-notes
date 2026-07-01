@@ -55,6 +55,7 @@ export async function GET() {
     const { data } = await admin
       .from("posts")
       .select("id,title,body,category,created_at")
+      .eq("status", "published")
       .order("created_at", { ascending: false });
     posts = (data ?? []).map((p) => ({
       type: "post",

@@ -32,6 +32,7 @@ export const getCombinedNavTree = cache(async (): Promise<NavCategory[]> => {
   const { data } = await supabase
     .from("posts")
     .select("id,title,body,category,updated_at")
+    .eq("status", "published")
     .order("updated_at", { ascending: false });
 
   const posts = data ?? [];

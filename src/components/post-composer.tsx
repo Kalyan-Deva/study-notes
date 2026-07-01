@@ -10,19 +10,25 @@ export function PostComposer({
   post,
   categories = [],
   canEdit,
+  mode = "publish",
 }: {
   post?: Post;
   categories?: string[];
   canEdit: boolean;
+  // "publish" = admin writes directly; "submit" = public submits for moderation.
+  mode?: "publish" | "submit";
 }) {
+  const submitMode = mode === "submit";
   const [title, setTitle] = useState(post?.title ?? "");
   const [category, setCategory] = useState(post?.category ?? "");
   const [body, setBody] = useState(post?.body ?? "");
+  const [email, setEmail] = useState("");
   const [draft, setDraft] = useState("");
   const [preview, setPreview] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -177,6 +183,28 @@ export function PostComposer({
     const pending = draft.trim();
     const finalBody = pending ? (body ? `${body}\n\n${pending}` : pending) : body;
 
+    // Public submission → moderation queue (needs a confirmable email).
+    if (submitMode) {
+      const res = await fetch("/api/posts/submit", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim() || "Untitled",
+          body: finalBody,
+          category: category.trim(),
+          email: email.trim(),
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      setSaving(false);
+      if (!res.ok) {
+        setErr(json.error ?? "Could not submit.");
+        return;
+      }
+      setSubmitted(true);
+      return;
+    }
+
     const url = post ? `/api/posts/${post.id}` : "/api/posts";
     const res = await fetch(url, {
       method: post ? "PATCH" : "POST",
@@ -220,6 +248,21 @@ export function PostComposer({
   const toolBtn =
     "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm text-muted transition-colors hover:bg-background hover:text-foreground";
 
+  if (submitted) {
+    return (
+      <div className="mx-auto max-w-lg py-16 text-center">
+        <h1 className="text-2xl font-bold tracking-tight">Thanks — one more step</h1>
+        <p className="mt-3 text-muted">
+          We sent a confirmation link to <strong>{email}</strong>. Click it to send your
+          post for review. Once approved, it appears on the site.
+        </p>
+        <Link href="/" className="mt-6 inline-block text-accent hover:underline">
+          ← Back to home
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-9rem)] flex-col">
       {/* Top bar */}
@@ -257,7 +300,16 @@ export function PostComposer({
                 <option key={c} value={c} />
               ))}
             </datalist>
-            {dirty && (
+            {submitMode && (
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@email.com"
+                className="w-48 rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-accent"
+              />
+            )}
+            {dirty && !submitMode && (
               <span className="text-xs text-muted" title="Unsaved changes">
                 ● Unsaved
               </span>
@@ -268,7 +320,13 @@ export function PostComposer({
               disabled={saving}
               className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-opacity disabled:opacity-60"
             >
-              {saving ? "Posting…" : "Post"}
+              {saving
+                ? submitMode
+                  ? "Submitting…"
+                  : "Posting…"
+                : submitMode
+                  ? "Submit for review"
+                  : "Post"}
             </button>
             {post && (
               <button
@@ -417,7 +475,15 @@ export function PostComposer({
               <span className="text-[11px] text-muted">
                 <kbd className="rounded border border-border px-1">Ctrl</kbd>+
                 <kbd className="rounded border border-border px-1">Enter</kbd> to add ·{" "}
-                <strong>Post</strong> to publish on the home page
+                {submitMode ? (
+                  <>
+                    <strong>Submit for review</strong> when done
+                  </>
+                ) : (
+                  <>
+                    <strong>Post</strong> to publish on the home page
+                  </>
+                )}
               </span>
               <button
                 type="button"

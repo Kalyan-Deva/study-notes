@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
+import { getAdminUser } from "@/lib/admin-auth";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
-// Token gate temporarily removed for Posts — restore the getEditSession()/canEdit
-// check (as in the journal routes) to re-lock editing.
+// Edit/delete a post — admin-only (public contributes via the moderation queue).
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const adminUser = await getAdminUser();
+  if (!adminUser) return NextResponse.json({ error: "Not authorized." }, { status: 403 });
+
   const { id } = await params;
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Bad request." }, { status: 400 });
@@ -29,6 +32,9 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const adminUser = await getAdminUser();
+  if (!adminUser) return NextResponse.json({ error: "Not authorized." }, { status: 403 });
+
   const { id } = await params;
   const admin = createSupabaseAdmin();
   const { error } = await admin.from("posts").delete().eq("id", id);
