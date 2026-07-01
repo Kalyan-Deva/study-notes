@@ -13,7 +13,6 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import type { Post } from "@/lib/supabase/types";
 
-// Minimal mdast node shape (we only read a few fields).
 type MdNode = {
   type: string;
   value?: string;
@@ -24,74 +23,97 @@ type MdNode = {
 };
 
 const INK = "#1b1a18";
+const SUBTLE = "#4b4842";
 const CORAL = "#c14a35";
-const MUTED = "#71706d";
+const MUTED = "#8a857d";
+const LINE = "#e7e4df";
+const PANEL = "#f6f5f2";
 
 const styles = StyleSheet.create({
   page: {
-    paddingVertical: 54,
-    paddingHorizontal: 56,
-    fontFamily: "Times-Roman",
-    fontSize: 11,
-    lineHeight: 1.5,
+    paddingTop: 56,
+    paddingBottom: 64,
+    paddingHorizontal: 58,
+    fontFamily: "Helvetica",
+    fontSize: 10.5,
+    lineHeight: 1.55,
     color: INK,
   },
+  // ── header ──
   eyebrow: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 9,
+    fontSize: 8.5,
     color: CORAL,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    marginBottom: 6,
+    letterSpacing: 2,
+    marginBottom: 8,
   },
-  title: { fontFamily: "Times-Bold", fontSize: 24, marginBottom: 8 },
-  meta: {
-    fontFamily: "Helvetica",
-    fontSize: 9,
-    color: MUTED,
-    marginBottom: 18,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e7e4df",
+  title: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 25,
+    lineHeight: 1.12,
+    color: "#141311",
+    marginBottom: 10,
   },
-  h1: { fontFamily: "Times-Bold", fontSize: 18, marginTop: 16, marginBottom: 6 },
-  h2: { fontFamily: "Times-Bold", fontSize: 15, marginTop: 16, marginBottom: 6 },
-  h3: { fontFamily: "Times-Bold", fontSize: 12.5, marginTop: 12, marginBottom: 4 },
-  paragraph: { marginBottom: 8 },
-  bold: { fontFamily: "Times-Bold" },
-  italic: { fontFamily: "Times-Italic" },
+  meta: { fontFamily: "Helvetica", fontSize: 9, color: MUTED },
+  rule: { borderBottomWidth: 2, borderBottomColor: CORAL, marginTop: 14, marginBottom: 22 },
+  // ── blocks ──
+  h1: { fontFamily: "Helvetica-Bold", fontSize: 17, color: "#141311", marginTop: 18, marginBottom: 7 },
+  h2: { fontFamily: "Helvetica-Bold", fontSize: 14, color: "#141311", marginTop: 18, marginBottom: 7 },
+  h3: { fontFamily: "Helvetica-Bold", fontSize: 11.5, color: SUBTLE, marginTop: 13, marginBottom: 4 },
+  paragraph: { marginBottom: 9, color: SUBTLE },
+  bold: { fontFamily: "Helvetica-Bold", color: INK },
+  italic: { fontFamily: "Helvetica-Oblique" },
   link: { color: CORAL, textDecoration: "underline" },
-  inlineCode: { fontFamily: "Courier", fontSize: 10 },
+  inlineCode: {
+    fontFamily: "Courier",
+    fontSize: 9.5,
+    color: "#b5310f",
+  },
   codeBlock: {
-    backgroundColor: "#f6f5f3",
+    backgroundColor: PANEL,
     borderWidth: 1,
-    borderColor: "#e7e4df",
-    borderRadius: 4,
-    padding: 8,
-    marginVertical: 6,
+    borderColor: LINE,
+    borderRadius: 5,
+    paddingVertical: 9,
+    paddingHorizontal: 11,
+    marginVertical: 9,
   },
-  codeText: { fontFamily: "Courier", fontSize: 9, lineHeight: 1.4, color: "#333" },
+  codeText: { fontFamily: "Courier", fontSize: 9, lineHeight: 1.5, color: "#3a3733" },
   blockquote: {
-    borderLeftWidth: 2,
+    borderLeftWidth: 3,
     borderLeftColor: CORAL,
-    paddingLeft: 10,
-    marginVertical: 6,
-    color: "#57534e",
+    paddingLeft: 12,
+    paddingVertical: 2,
+    marginVertical: 9,
+    color: MUTED,
   },
-  list: { marginVertical: 6 },
-  listItem: { flexDirection: "row", marginBottom: 3 },
-  listMarker: { width: 16, color: MUTED },
-  listContent: { flex: 1 },
-  hr: { borderBottomWidth: 1, borderBottomColor: "#e7e4df", marginVertical: 14 },
-  image: { maxWidth: "100%", marginVertical: 8 },
-  table: { marginVertical: 8, borderWidth: 1, borderColor: "#e7e4df" },
+  list: { marginVertical: 7 },
+  listItem: { flexDirection: "row", marginBottom: 5 },
+  listMarker: { width: 16, color: CORAL, fontFamily: "Helvetica-Bold" },
+  listContent: { flex: 1, color: SUBTLE },
+  hr: { borderBottomWidth: 1, borderBottomColor: LINE, marginVertical: 16 },
+  image: { maxWidth: "100%", marginVertical: 10 },
+  table: { marginVertical: 10, borderWidth: 1, borderColor: LINE, borderRadius: 4 },
   tableRow: { flexDirection: "row" },
   tableCell: {
     flex: 1,
-    padding: 5,
-    fontSize: 9.5,
+    paddingVertical: 5,
+    paddingHorizontal: 7,
+    fontSize: 9,
+    color: SUBTLE,
     borderWidth: 0.5,
-    borderColor: "#e7e4df",
+    borderColor: LINE,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 28,
+    left: 58,
+    right: 58,
+    textAlign: "center",
+    fontFamily: "Helvetica",
+    fontSize: 8,
+    color: MUTED,
+    letterSpacing: 0.5,
   },
 });
 
@@ -219,14 +241,22 @@ export async function renderPostPdf(
   const blocks = (tree.children ?? []).map((n, i) => block(n, `b${i}`));
 
   const doc = (
-    <Document>
+    <Document title={post.title} author="Lexicon">
       <Page size="A4" style={styles.page}>
         <Text style={styles.eyebrow}>{(post.category || "Post").toUpperCase()}</Text>
         <Text style={styles.title}>{post.title}</Text>
         <Text style={styles.meta}>
-          {dateStr} · {minutes} min read · Lexicon
+          {dateStr}   ·   {minutes} min read   ·   Lexicon
         </Text>
+        <View style={styles.rule} />
         {blocks}
+        <Text
+          style={styles.footer}
+          fixed
+          render={({ pageNumber, totalPages }) =>
+            `Lexicon   ·   ${pageNumber} of ${totalPages}`
+          }
+        />
       </Page>
     </Document>
   );
