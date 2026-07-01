@@ -6,9 +6,8 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/feed": ["./content/**/*"],
   },
-  // Keep the headless-Chromium deps out of the bundle so the /api/pdf route
-  // works on Vercel (they're loaded at runtime, not bundled).
-  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+  // react-pdf ships native/font assets that shouldn't be bundled by Turbopack.
+  serverExternalPackages: ["@react-pdf/renderer"],
 };
 
 export default nextConfig;
