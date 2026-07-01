@@ -46,7 +46,7 @@ async function launchBrowser() {
   if (process.env.VERCEL) {
     const chromium = (await import("@sparticuz/chromium")).default;
     return puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"],
       executablePath: await chromium.executablePath(),
       headless: true,
     });
@@ -95,8 +95,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     minutes,
   });
 
-  const browser = await launchBrowser();
+  let browser: Awaited<ReturnType<typeof launchBrowser>> | undefined;
   try {
+    browser = await launchBrowser();
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });
     const pdf = await page.pdf({
@@ -117,7 +118,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         "content-disposition": `attachment; filename="${slugify(p.title)}.pdf"`,
       },
     });
+  } catch (e) {
+    console.error("PDF generation failed:", e);
+    return new NextResponse(
+      `PDF generation failed: ${e instanceof Error ? e.message : "unknown error"}`,
+      { status: 500 },
+    );
   } finally {
-    await browser.close();
+    await browser?.close();
   }
 }
