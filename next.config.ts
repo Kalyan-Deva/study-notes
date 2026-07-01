@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/feed": ["./content/**/*"],
   },
+  // Keep the headless-Chromium deps out of the bundle so the /api/pdf route
+  // works on Vercel (they're loaded at runtime, not bundled).
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
 };
 
 export default nextConfig;

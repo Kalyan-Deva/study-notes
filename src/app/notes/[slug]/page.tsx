@@ -23,6 +23,7 @@ import {
 import { OnThisPage } from "@/components/on-this-page";
 import { ScrollSpyToc } from "@/components/scroll-spy-toc";
 import { Highlighter } from "@/components/highlighter";
+import { PrintButton } from "@/components/print-button";
 
 const mdxComponents = {
   LayerStack,
@@ -107,15 +108,16 @@ export default async function NotePage({
             {note.meta.category}
           </p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight">{note.meta.title}</h1>
-          {note.meta.updated && (
-            <p className="mt-2 text-xs text-muted">Updated {note.meta.updated}</p>
-          )}
+          <div className="mt-2 flex items-center gap-3 text-xs text-muted">
+            {note.meta.updated && <span>Updated {note.meta.updated}</span>}
+            <PrintButton />
+          </div>
         </header>
         <OnThisPage />
         <div className="prose">{content}</div>
 
         {related.length > 0 && (
-          <div className="mt-10">
+          <div className="mt-10" data-print-hide>
             <p className="text-xs font-semibold uppercase tracking-wider text-muted">
               Related notes
             </p>

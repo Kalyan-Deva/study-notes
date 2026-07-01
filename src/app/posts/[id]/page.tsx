@@ -61,6 +61,18 @@ export default async function PostPage({
             <span>Updated {new Date(p.updated_at).toLocaleDateString()}</span>
             <span aria-hidden="true">·</span>
             <span>{minutes} min read</span>
+            <a
+              href={`/api/pdf/${p.id}`}
+              className="inline-flex items-center gap-1 text-accent hover:underline"
+              title="Download a formatted PDF"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 3v12" />
+                <path d="m7 12 5 5 5-5" />
+                <path d="M5 21h14" />
+              </svg>
+              Download PDF
+            </a>
             <Link href={`/compose/${p.id}`} className="text-accent hover:underline">
               Edit
             </Link>
