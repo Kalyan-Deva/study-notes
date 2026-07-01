@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCombinedNavTree } from "@/lib/nav";
+import { JsonLd } from "@/components/json-ld";
+import { websiteJsonLd } from "@/lib/jsonld";
 
 export const metadata: Metadata = {
   // Descriptive, keyword-rich title/description for the home page (overrides the
@@ -18,6 +20,7 @@ export default async function Home() {
 
   return (
     <div>
+      <JsonLd data={websiteJsonLd()} />
       <section className="border-b border-border pb-8">
         <h1 className="text-4xl font-bold tracking-tight">
           Lexicon — a personal knowledge base

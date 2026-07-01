@@ -22,17 +22,34 @@ export function JournalComposer({
   const [title, setTitle] = useState(note?.title ?? "");
   const [entries, setEntries] = useState<JournalEntry[]>(note?.entries ?? []);
   const [draft, setDraft] = useState("");
+  const [preview, setPreview] = useState(false);
+  const [showTools, setShowTools] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const taRef = useRef<HTMLTextAreaElement>(null);
   const feedEndRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     feedEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [entries.length]);
+
+  // Close the formatting menu when clicking outside it.
+  useEffect(() => {
+    if (!showTools) return;
+    function onDown(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowTools(false);
+      }
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [showTools]);
 
   function commitDraft() {
     const md = draft.trim();
@@ -44,9 +61,26 @@ export function JournalComposer({
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    const mod = e.ctrlKey || e.metaKey;
+    if (!mod) return;
+    if (e.key === "Enter") {
       e.preventDefault();
       commitDraft();
+      return;
+    }
+    const k = e.key.toLowerCase();
+    if (k === "b") {
+      e.preventDefault();
+      wrapSelection("**");
+    } else if (k === "i") {
+      e.preventDefault();
+      wrapSelection("*");
+    } else if (k === "u") {
+      e.preventDefault();
+      wrapSelection("<u>", "</u>");
+    } else if (k === "e") {
+      e.preventDefault();
+      wrapSelection("`");
     }
   }
 
@@ -99,6 +133,51 @@ export function JournalComposer({
     else if (value === "h2") prefixLines(() => "## ");
     else if (value === "h3") prefixLines(() => "### ");
     else if (value === "quote") prefixLines(() => "> ");
+  }
+
+  function insertAtCursor(text: string) {
+    const ta = taRef.current;
+    if (!ta) {
+      setDraft((d) => d + text);
+      setDirty(true);
+      return;
+    }
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    setDraft(draft.slice(0, start) + text + draft.slice(end));
+    setDirty(true);
+    requestAnimationFrame(() => {
+      ta.focus();
+      const pos = start + text.length;
+      ta.selectionStart = ta.selectionEnd = pos;
+    });
+  }
+
+  async function uploadImage(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    setUploading(true);
+    setErr(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const json = await res.json().catch(() => ({}));
+    setUploading(false);
+    if (!res.ok) {
+      setErr(json.error ?? "Upload failed.");
+      return;
+    }
+    insertAtCursor(`\n![${file.name.replace(/\.[^.]+$/, "")}](${json.url})\n`);
+  }
+
+  function onPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const item = Array.from(e.clipboardData.items).find((i) => i.type.startsWith("image/"));
+    if (item) {
+      const file = item.getAsFile();
+      if (file) {
+        e.preventDefault();
+        void uploadImage(file);
+      }
+    }
   }
 
   async function save() {
@@ -247,57 +326,96 @@ export function JournalComposer({
       {canEdit && (
         <div className="fixed bottom-4 left-1/2 z-30 w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2">
           <div className="glass-edge rounded-2xl border border-foreground/10 bg-card/80 p-2 shadow-xl backdrop-blur-2xl backdrop-saturate-150">
-            <div className="mb-1.5 flex flex-wrap items-center gap-1 px-1">
-              <button type="button" className={toolBtn} title="Bold (**)" onClick={() => wrapSelection("**")}>
-                <strong>B</strong>
-              </button>
-              <button type="button" className={toolBtn} title="Italic (*)" onClick={() => wrapSelection("*")}>
-                <em>I</em>
-              </button>
-              <button type="button" className={toolBtn} title="Inline code (`)" onClick={() => wrapSelection("`")}>
-                <code className="text-xs">{"</>"}</code>
-              </button>
-              <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
-              <button type="button" className={toolBtn} title="Bullet list" onClick={() => prefixLines(() => "- ")}>
-                • List
-              </button>
+            {/* Formatting tucked behind a kebab menu, top-right */}
+            <div ref={menuRef} className="relative mb-1 flex justify-end">
               <button
                 type="button"
+                onClick={() => setShowTools((v) => !v)}
                 className={toolBtn}
-                title="Numbered list"
-                onClick={() => prefixLines((i) => `${i + 1}. `)}
+                aria-label="Formatting options"
+                aria-expanded={showTools}
+                title="Formatting"
               >
-                1. List
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="12" cy="5" r="1.6" />
+                  <circle cx="12" cy="12" r="1.6" />
+                  <circle cx="12" cy="19" r="1.6" />
+                </svg>
               </button>
-              <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
-              <select
-                aria-label="Format style"
-                defaultValue=""
-                onChange={(e) => {
-                  applyFormat(e.target.value);
-                  e.target.value = "";
-                }}
-                className="h-8 rounded-md bg-transparent px-1 text-sm text-muted outline-none hover:text-foreground"
-              >
-                <option value="" disabled>
-                  Style…
-                </option>
-                <option value="h1">Heading 1</option>
-                <option value="h2">Heading 2</option>
-                <option value="h3">Heading 3</option>
-                <option value="quote">Quote</option>
-              </select>
+
+              {showTools && (
+                <div className="absolute bottom-full right-0 z-20 mb-2 flex w-60 flex-wrap gap-1 rounded-xl border border-foreground/10 bg-card p-1.5 shadow-xl">
+                  <button type="button" className={toolBtn} title="Bold (Ctrl+B)" onClick={() => wrapSelection("**")}>
+                    <strong>B</strong>
+                  </button>
+                  <button type="button" className={toolBtn} title="Italic (Ctrl+I)" onClick={() => wrapSelection("*")}>
+                    <em>I</em>
+                  </button>
+                  <button type="button" className={toolBtn} title="Underline (Ctrl+U)" onClick={() => wrapSelection("<u>", "</u>")}>
+                    <span className="underline">U</span>
+                  </button>
+                  <button type="button" className={toolBtn} title="Inline code (Ctrl+E)" onClick={() => wrapSelection("`")}>
+                    <code className="text-xs">{"</>"}</code>
+                  </button>
+                  <button type="button" className={toolBtn} title="Bullet list" onClick={() => prefixLines(() => "- ")}>
+                    • List
+                  </button>
+                  <button type="button" className={toolBtn} title="Numbered list" onClick={() => prefixLines((i) => `${i + 1}. `)}>
+                    1. List
+                  </button>
+                  <button type="button" className={toolBtn} title="Heading" onClick={() => applyFormat("h2")}>
+                    H2
+                  </button>
+                  <button type="button" className={toolBtn} title="Subheading" onClick={() => applyFormat("h3")}>
+                    H3
+                  </button>
+                  <button type="button" className={toolBtn} title="Quote" onClick={() => applyFormat("quote")}>
+                    ❝
+                  </button>
+                  <button type="button" className={toolBtn} title="Insert image" onClick={() => fileInputRef.current?.click()}>
+                    {uploading ? "…" : "🖼"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreview((v) => !v)}
+                    className={`${toolBtn} ${preview ? "bg-background text-foreground" : ""}`}
+                    title="Toggle live preview"
+                    aria-pressed={preview}
+                  >
+                    {preview ? "Edit" : "Preview"}
+                  </button>
+                </div>
+              )}
             </div>
 
-            <textarea
-              ref={taRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={onKeyDown}
-              rows={2}
-              placeholder="Write a note…  (Ctrl+Enter to add it above)"
-              className="max-h-40 min-h-[2.75rem] w-full resize-none rounded-xl bg-transparent px-3 py-2 text-sm leading-relaxed outline-none"
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void uploadImage(f);
+                e.target.value = "";
+              }}
             />
+
+            {preview ? (
+              <div className="max-h-40 min-h-[2.75rem] overflow-y-auto rounded-xl border border-card-border px-3 py-2">
+                <Markdown>{draft || "_Nothing to preview — start typing._"}</Markdown>
+              </div>
+            ) : (
+              <textarea
+                ref={taRef}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={onKeyDown}
+                onPaste={onPaste}
+                rows={2}
+                placeholder="Write a note…  (Ctrl+Enter to add, paste an image)"
+                className="max-h-40 min-h-[2.75rem] w-full resize-none rounded-xl bg-transparent px-3 py-2 text-sm leading-relaxed outline-none"
+              />
+            )}
 
             <div className="flex items-center justify-between px-2 pb-1">
               <span className="text-[11px] text-muted">

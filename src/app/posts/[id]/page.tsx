@@ -6,6 +6,10 @@ import { supabaseConfigured } from "@/lib/supabase/config";
 import { Markdown } from "@/components/markdown";
 import { OnThisPage } from "@/components/on-this-page";
 import { ScrollSpyToc } from "@/components/scroll-spy-toc";
+import { JsonLd } from "@/components/json-ld";
+import { articleJsonLd } from "@/lib/jsonld";
+import { postSummary } from "@/lib/nav";
+import { SITE_URL } from "@/lib/site";
 import type { Post } from "@/lib/supabase/types";
 
 export async function generateMetadata({
@@ -51,6 +55,20 @@ export default async function PostPage({
 
   return (
     <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_12rem] xl:gap-10">
+      <JsonLd
+        data={articleJsonLd({
+          title: p.title,
+          description: postSummary(p.body),
+          url: `${SITE_URL}/posts/${p.id}`,
+          image: `${SITE_URL}/posts/${p.id}/opengraph-image`,
+          datePublished: p.created_at,
+          dateModified: p.updated_at,
+          crumbs: [
+            { name: "Home", url: SITE_URL },
+            { name: p.title, url: `${SITE_URL}/posts/${p.id}` },
+          ],
+        })}
+      />
       <article className="min-w-0">
         <header className="mb-5 border-b border-border pb-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-accent">

@@ -24,6 +24,9 @@ import { OnThisPage } from "@/components/on-this-page";
 import { ScrollSpyToc } from "@/components/scroll-spy-toc";
 import { Highlighter } from "@/components/highlighter";
 import { PrintButton } from "@/components/print-button";
+import { JsonLd } from "@/components/json-ld";
+import { articleJsonLd } from "@/lib/jsonld";
+import { SITE_URL } from "@/lib/site";
 
 const mdxComponents = {
   LayerStack,
@@ -102,6 +105,21 @@ export default async function NotePage({
 
   return (
     <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_12rem] xl:gap-10">
+      <JsonLd
+        data={articleJsonLd({
+          title: note.meta.title,
+          description: note.meta.summary || undefined,
+          url: `${SITE_URL}/notes/${slug}`,
+          image: `${SITE_URL}/notes/${slug}/opengraph-image`,
+          datePublished: note.meta.updated ?? undefined,
+          dateModified: note.meta.updated ?? undefined,
+          crumbs: [
+            { name: "Home", url: SITE_URL },
+            { name: note.meta.category, url: SITE_URL },
+            { name: note.meta.title, url: `${SITE_URL}/notes/${slug}` },
+          ],
+        })}
+      />
       <article className="min-w-0">
         <header className="mb-5 border-b border-border pb-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-accent">
